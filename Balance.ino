@@ -16,6 +16,7 @@ void setup() {
   Wire.begin();   //Join (create) the I2C bus
   Serial.begin (9600);  //Start serial communication with the host PC
 
+  //MPU 6050 SETUP
   //Wake up the MPU 6050
   Wire.beginTransmission(IMUADDRESS);
   Wire.write(107);
@@ -39,7 +40,14 @@ void setup() {
   Wire.write(25); //SMPLRT_DIV is stored in register 25. Sample rate is: gyroSampleRate = 8kHz/(1 + SMPLRT_DIV)
   Wire.write(SMPLRT_DIV);
   Wire.endTransmission(true);
-  
+
+  //L298 SETUP
+  pinMode(6, OUTPUT);   //6,7 forward/backwards motor 1
+  pinMode(7, OUTPUT);
+  pinMode(8, OUTPUT);   //8,9 forward/backwards motor 2
+  pinMode(9, OUTPUT);
+  pinMode(10,OUTPUT);   //10,11 pwm speed control motor 1 & 2
+  pinMode(11,OUTPUT);
 }
 
 void loop() {
