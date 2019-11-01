@@ -10,6 +10,8 @@ unsigned long time; //Time used to calculate dt in the stateEstimation function
 float ax, ay, az;
 float gx, gy, gz;
 
+const float thetaRef = -107.7;  //Experimentally determined for upright position
+
 float theta;  //System state is considered to be just theta measured about the IMU x axis. Measured in degrees.
 float u;  //Control input function. Robot is constrained to straight line motion to 1 input for 2 motors
 
@@ -73,12 +75,16 @@ void loop() {
   Serial.print ("Theta: ");
   Serial.println(theta);
 
-  u = 0;
+  u = evaluateControlLaw ();  //Controller currently runs in round robin configuration
 
-  calculateMotorSpeed(u);
+  calculateMotorSpeed(u);   //Convert u to an actual motor command
 }
 
-//Function to interpret the control input u as a motor command.
+/**Function to interpret the control input u as a motor command. This will
+ * be done linearly though the scaling may have to be adjusted depending on
+ * the control law implemented do to the limits imposed on pwm variables 
+ * (0 - 255).
+ */
 void calculateMotorSpeed(int u)
 {
   if (u > 0)
@@ -119,11 +125,30 @@ float estimateState ()
   
   float gtheta, atheta; //estimates of theta derived from either gyroscope or accelerometer measurements
 
-  gtheta = theta + gx * dt/1000000;   //need to define dt
+  gtheta = theta + gx * dt/1000000;   //need to define dt. Divide by 1000000 to convert to seconds
   atheta = atan2(ay,az)*180/PI; //Use atan2 function and convert to degrees.
 
   // A complimentary filter is defined as z = ax + (1-a)y. Calculate and return this value
   return a*gtheta + (1-a)*atheta;
+}
+
+/**Function to determine the control input, u, from the system state. Currently this is
+ * done as fast as the program can run in a round robin configuration while making the 
+ * assumption that the controller is in continuous time. This will be changed in the
+ * future to be a discrete time controller running off interrupts to ensure a constant
+ * sample time. Currently this is a PID controller with the system modeled as SISO
+ * (x degree of freedom is ignored so robot may still wander so long as it remains
+ * balanced upright).
+ */
+float evaluateControlLaw ()
+{
+  static float kp = 1;  //Defined as static local to allow gains to persist through
+  static float ki = 0;  //function returns.
+  static float kd = 0;
+
+  static err;   //absolute error  
+
+  return ;
 }
 
 void readIMU ()
