@@ -5,10 +5,15 @@
 
 #include <Wire.h>
 
+unsigned long time; //Time used to calculate dt in the stateEstimation function
+
 float ax, ay, az;
 float gx, gy, gz;
 
-int16_t u;  //Control input function. Robot is constrained to straight line motion to 1 input for 2 motors
+float theta;  //System state is considered to be just theta measured about the IMU x axis. Measured in degrees.
+float u;  //Control input function. Robot is constrained to straight line motion to 1 input for 2 motors
+
+float a = 0.98; //bias for the complimentary filter in estimateState function. Range 0-1 with 1 favoring gyro measurements
 
 uint8_t gyroSampleRate = 1;
 
@@ -63,6 +68,8 @@ void loop() {
 
   readIMU();  //Read the accelerometer and gyro
 
+  theta = estimateState ();
+
   u = 200;
 
   calculateMotorSpeed(u);
@@ -90,6 +97,30 @@ void calculateMotorSpeed(int u)
   analogWrite (11, abs(u));
   
   return;
+}
+
+
+/**Theta will be estimated using a complimentary filter combining the accelerometer 
+ * and gyro readings. Care must be taken to avoid the integration error impacting this
+ * value since a complimentary filter will not fix that, gtheta is calculated by adding
+ * the estimated gyro reading to the previous filtered theta to prevent this build up.
+ * The parameter a is defined above as a global variable.
+ */
+float estimateState ()
+{
+  /**Estimate the time delay from when the state was last estimated. State estimation
+   * runs as fast as possible and is assumed to be a continuous process.
+   */
+  unsigned long dt = micros() - time;
+  time += dt;             //increment time by dt
+  
+  float gtheta, atheta; //estimates of theta derived from either gyroscope or accelerometer measurements
+
+  gtheta = theta + gx * dt;   //need to define dt
+  atheta = atan2(ay,az)*180/PI; //Use atan2 function and convert to degrees.
+
+  // A complimentary filter is defined as z = ax + (1-a)y. Calculate and return this value
+  return a*gtheta + (1-a)*atheta;
 }
 
 void readIMU ()
