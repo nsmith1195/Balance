@@ -14,3 +14,4 @@ Currently the robot is assumed to have a 1 degree of freedom state (despite havi
 
 # Control Systems
 
+The main goal of this program is to implement various control systems on this robot platform. In order to evaluate the platforms functionality a base level controller must be implemented. A "continuous time" PID controller was implemented to do this where it is assumed that the processor runs fast enough to assume continuous time. This is obviously an unrealistic assumption and since the use of interrupts is ommited the controller will also update at irregular time intervals which is expected to lead to very poor performance. Once the system has been properly tested for basic functionality a digital controller will be created for it to improve performance.
