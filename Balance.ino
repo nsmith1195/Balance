@@ -70,7 +70,10 @@ void loop() {
 
   theta = estimateState ();
 
-  u = 200;
+  Serial.print ("Theta: ");
+  Serial.println(theta);
+
+  u = 0;
 
   calculateMotorSpeed(u);
 }
@@ -116,7 +119,7 @@ float estimateState ()
   
   float gtheta, atheta; //estimates of theta derived from either gyroscope or accelerometer measurements
 
-  gtheta = theta + gx * dt;   //need to define dt
+  gtheta = theta + gx * dt/1000000;   //need to define dt
   atheta = atan2(ay,az)*180/PI; //Use atan2 function and convert to degrees.
 
   // A complimentary filter is defined as z = ax + (1-a)y. Calculate and return this value
