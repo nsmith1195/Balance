@@ -73,9 +73,12 @@ void loop() {
   theta = estimateState ();
 
   Serial.print ("Theta: ");
-  Serial.println(theta);
+  Serial.print(theta);
 
   u = evaluateControlLaw ();  //Controller currently runs in round robin configuration
+
+  Serial.print("   U: ");
+  Serial.println(u);
 
   calculateMotorSpeed(u);   //Convert u to an actual motor command
 }
@@ -141,14 +144,17 @@ float estimateState ()
  * balanced upright).
  */
 float evaluateControlLaw ()
-{
-  static float kp = 1;  //Defined as static local to allow gains to persist through
+{ 
+  static float err, accErr = 0; //error and accumulated error
+   
+  static float kp = 100;  //Defined as static local to allow gains to persist through
   static float ki = 0;  //function returns.
   static float kd = 0;
 
-  static err;   //absolute error  
-
-  return ;
+  err = thetaRef - theta;   //absolute error  
+  accErr += err;   //ignored dt since result can be arbitrarily decided with ki
+  
+  return kp*err + ki*accErr;  
 }
 
 void readIMU ()
