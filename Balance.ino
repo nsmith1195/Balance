@@ -1,7 +1,14 @@
+/**This program controls the balancing robot. This Arduino based robot uses an L298N motor driver
+ * and MPU 6050 IMU to measure the robot state. Currently no odometry sensors are connected so 
+ * ground position cannot be directly controlled.
+ */
+
 #include <Wire.h>
 
 float ax, ay, az;
 float gx, gy, gz;
+
+int16_t u;  //Control input function. Robot is constrained to straight line motion to 1 input for 2 motors
 
 uint8_t gyroSampleRate = 1;
 
@@ -15,6 +22,8 @@ const float gzBias = -0.54;
 void setup() {
   Wire.begin();   //Join (create) the I2C bus
   Serial.begin (9600);  //Start serial communication with the host PC
+
+  //TODO: update the MPU setup to be a burst write. Need to look into register 26 first
 
   //MPU 6050 SETUP
   //Wake up the MPU 6050
@@ -42,9 +51,9 @@ void setup() {
   Wire.endTransmission(true);
 
   //L298 SETUP
-  pinMode(6, OUTPUT);   //6,7 forward/backwards motor 1
+  pinMode(6, OUTPUT);   //6,7 backwards/forward motor 1
   pinMode(7, OUTPUT);
-  pinMode(8, OUTPUT);   //8,9 forward/backwards motor 2
+  pinMode(8, OUTPUT);   //8,9 backwards/forward motor 2
   pinMode(9, OUTPUT);
   pinMode(10,OUTPUT);   //10,11 pwm speed control motor 1 & 2
   pinMode(11,OUTPUT);
@@ -52,6 +61,39 @@ void setup() {
 
 void loop() {
 
+  readIMU();  //Read the accelerometer and gyro
+
+  u = 200;
+
+  calculateMotorSpeed(u);
+}
+
+//Function to interpret the control input u as a motor command.
+void calculateMotorSpeed(int u)
+{
+  if (u > 0)
+  {
+    digitalWrite (6, LOW); //Forward
+    digitalWrite (7, HIGH);
+    digitalWrite (8, LOW);
+    digitalWrite (9, HIGH);
+  }
+  else
+  {
+    digitalWrite (6, HIGH);  //Reverse
+    digitalWrite (7, LOW);
+    digitalWrite (8, HIGH);
+    digitalWrite (9, LOW);
+  }
+
+  analogWrite (10, abs(u)); //set the pwm speed proportional to u. Sign is taken care of above
+  analogWrite (11, abs(u));
+  
+  return;
+}
+
+void readIMU ()
+{
   //The IMU automatically updates each sensor's reading at the rate set in the registers.
   Wire.beginTransmission(IMUADDRESS);
   Wire.write(59); //Read addresses 59-72 are sensor data
@@ -73,9 +115,7 @@ void loop() {
     gz = ((Wire.read() << 8 | Wire.read()) / 131.0) - gzBias;
   }
 
-  Wire.endTransmission(true);
+  Wire.endTransmission(true); //send stop signal to terminate transmission
 
-  Serial.println (gz);
-
-  delay (500);  //slow down program to make serial output readable
+  return;
 }
