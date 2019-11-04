@@ -10,7 +10,7 @@ unsigned long time; //Time used to calculate dt in the stateEstimation function
 float ax, ay, az;
 float gx, gy, gz;
 
-const float thetaRef = -107.7;  //Experimentally determined for upright position
+const float thetaRef = -96;  //Experimentally determined for upright position
 
 float theta;  //System state is considered to be just theta measured about the IMU x axis. Measured in degrees.
 float u;  //Control input function. Robot is constrained to straight line motion to 1 input for 2 motors
@@ -29,6 +29,8 @@ const float gzBias = -0.54;
 void setup() {
   Wire.begin();   //Join (create) the I2C bus
   Serial.begin (9600);  //Start serial communication with the host PC
+
+  delay (5000);   //Wait 5 seconds before doing anything to allow both batteries to be installed. TODO: install switch
 
   //TODO: update the MPU setup to be a burst write. Need to look into register 26 first
 
@@ -67,20 +69,22 @@ void setup() {
 }
 
 void loop() {
+  if (running)
+  {
+    readIMU();  //Read the accelerometer and gyro
 
-  readIMU();  //Read the accelerometer and gyro
+    theta = estimateState ();   //State only consists of theta for now
 
-  theta = estimateState ();
+    Serial.print ("Theta: ");
+    Serial.print(theta);
 
-  Serial.print ("Theta: ");
-  Serial.print(theta);
+    u = evaluateControlLaw ();  //Controller currently runs in round robin configuration
 
-  u = evaluateControlLaw ();  //Controller currently runs in round robin configuration
+    Serial.print("   U: ");
+    Serial.println(u);
 
-  Serial.print("   U: ");
-  Serial.println(u);
-
-  calculateMotorSpeed(u);   //Convert u to an actual motor command
+    calculateMotorSpeed(u);   //Convert u to an actual motor command
+  }
 }
 
 /**Function to interpret the control input u as a motor command. This will
@@ -147,7 +151,7 @@ float evaluateControlLaw ()
 { 
   static float err, accErr = 0; //error and accumulated error
    
-  static float kp = 100;  //Defined as static local to allow gains to persist through
+  static float kp = 1000;  //Defined as static local to allow gains to persist through
   static float ki = 0;  //function returns.
   static float kd = 0;
 
@@ -168,6 +172,8 @@ void readIMU ()
 
   if (6 <= Wire.available())  //if all of the data is available
   {
+    noInterrupts(); //don't allow interrupts while reading data
+    
     ax = (Wire.read() << 8 | Wire.read()) / 16384.0;  //Read Accelerometer
     ay = (Wire.read() << 8 | Wire.read()) / 16384.0;
     az = (Wire.read() << 8 | Wire.read()) / 16384.0;
@@ -178,6 +184,8 @@ void readIMU ()
     gx = ((Wire.read() << 8 | Wire.read()) / 131.0) - gxBias;  //read gyro
     gy = ((Wire.read() << 8 | Wire.read()) / 131.0) - gyBias;
     gz = ((Wire.read() << 8 | Wire.read()) / 131.0) - gzBias;
+
+    interrupts(); //allow interrupts again
   }
 
   Wire.endTransmission(true); //send stop signal to terminate transmission
