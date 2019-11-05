@@ -5,12 +5,15 @@
 
 #include <Wire.h>
 
+boolean running;  //variable to automatically kill program if necessary
+
+unsigned long runTime;  //time in milliseconds for the program to run before stopping
 unsigned long time; //Time used to calculate dt in the stateEstimation function
 
 float ax, ay, az;
 float gx, gy, gz;
 
-const float thetaRef = -96;  //Experimentally determined for upright position
+const float thetaRef = -100.3;  //Experimentally determined for upright position
 
 float theta;  //System state is considered to be just theta measured about the IMU x axis. Measured in degrees.
 float u;  //Control input function. Robot is constrained to straight line motion to 1 input for 2 motors
@@ -30,7 +33,9 @@ void setup() {
   Wire.begin();   //Join (create) the I2C bus
   Serial.begin (9600);  //Start serial communication with the host PC
 
-  delay (5000);   //Wait 5 seconds before doing anything to allow both batteries to be installed. TODO: install switch
+  delay (5000);   //Wait 5 seconds before doing anything to allow both batteries to be installed. TODO: install switch on robot...
+  running = true;   //allow main loop to run
+  runTime = 10000;  //run program for 10 seconds
 
   //TODO: update the MPU setup to be a burst write. Need to look into register 26 first
 
@@ -84,6 +89,12 @@ void loop() {
     Serial.println(u);
 
     calculateMotorSpeed(u);   //Convert u to an actual motor command
+
+    if (millis() > runTime) //stop the program after 10 seconds
+    {
+      calculateMotorSpeed(0); //send the motors a stop signal
+      running = false;  //stop the loop from running
+    }
   }
 }
 
