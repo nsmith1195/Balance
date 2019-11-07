@@ -5,6 +5,9 @@
 
 #include <Wire.h>
 
+const uint16_t t0_load = 0;     //Set variables for the initial value of timer0 (t0_load) and value to throw interrupt at (t0_comp)
+const uint16_t t0_comp = 12500;
+
 boolean running;  //variable to automatically kill program if necessary
 
 unsigned long runTime;  //time in milliseconds for the program to run before stopping
@@ -31,11 +34,12 @@ const float gzBias = -0.54;
 
 void setup() {
   Wire.begin();   //Join (create) the I2C bus
+  
   Serial.begin (9600);  //Start serial communication with the host PC
 
   delay (5000);   //Wait 5 seconds before doing anything to allow both batteries to be installed. TODO: install switch on robot...
   running = true;   //allow main loop to run
-  runTime = 10000;  //run program for 10 seconds
+  runTime = 15000;  //run program for 10 seconds
 
   //TODO: update the MPU setup to be a burst write. Need to look into register 26 first
 
@@ -65,12 +69,29 @@ void setup() {
   Wire.endTransmission(true);
 
   //L298 SETUP
-  pinMode(6, OUTPUT);   //6,7 backwards/forward motor 1
+  //Pin 6 is the OC0A output so pin 12 is used instead
+  pinMode(12, OUTPUT);   //12,7 backwards/forward motor 1
   pinMode(7, OUTPUT);
   pinMode(8, OUTPUT);   //8,9 backwards/forward motor 2
   pinMode(9, OUTPUT);
   pinMode(10,OUTPUT);   //10,11 pwm speed control motor 1 & 2
   pinMode(11,OUTPUT);
+
+  //TIMER INTERRUPT SETUP
+  TCCR0A = byte(0x42); //reset Timer0 control reg A to use OC0A register for compare match and use CTC mode
+
+  TCCR0B |= (1 << CS12);    //Set to prescaler of 256
+  TCCR0B &= ~(1 << CS11);
+  TCCR0B &= ~(1 << CS10);
+
+  TCNT0 = t0_load;    //Reset timer0 and set the compare value
+  OCR0A = t0_comp;
+
+  TIMSK0 &= ~(1 << 2);   //Enable timer0 compare intterupt A
+  TIMSK0 |= (1 << 1);
+  TIMSK0 &= ~(1 << 0);
+
+  sei();  //Enable global interrupts
 }
 
 void loop() {
@@ -81,17 +102,11 @@ void loop() {
     theta = estimateState ();   //State only consists of theta for now
 
     Serial.print ("Theta: ");
-    Serial.print(theta);
-
-    u = evaluateControlLaw ();  //Controller currently runs in round robin configuration
-
-    Serial.print("   U: ");
-    Serial.println(u);
-
-    calculateMotorSpeed(u);   //Convert u to an actual motor command
+    Serial.println(theta);
 
     if (millis() > runTime) //stop the program after 10 seconds
     {
+      noInterrupts();   //turn off interrupts
       calculateMotorSpeed(0); //send the motors a stop signal
       running = false;  //stop the loop from running
     }
@@ -105,23 +120,25 @@ void loop() {
  */
 void calculateMotorSpeed(int u)
 {
+  u = 0;
+  
   if (u > 0)
   {
-    digitalWrite (6, LOW); //Forward
+    digitalWrite (12, LOW); //Forward
     digitalWrite (7, HIGH);
     digitalWrite (8, LOW);
     digitalWrite (9, HIGH);
   }
   else
   {
-    digitalWrite (6, HIGH);  //Reverse
+    digitalWrite (12, HIGH);  //Reverse
     digitalWrite (7, LOW);
     digitalWrite (8, HIGH);
     digitalWrite (9, LOW);
   }
 
-  analogWrite (10, abs(u)); //set the pwm speed proportional to u. Sign is taken care of above
-  analogWrite (11, abs(u));
+  analogWrite (10, abs(100)); //set the pwm speed proportional to u. Sign is taken care of above
+  analogWrite (11, abs(100));
   
   return;
 }
@@ -162,7 +179,7 @@ float evaluateControlLaw ()
 { 
   static float err, accErr = 0; //error and accumulated error
    
-  static float kp = 1000;  //Defined as static local to allow gains to persist through
+  static float kp = 100;  //Defined as static local to allow gains to persist through
   static float ki = 0;  //function returns.
   static float kd = 0;
 
@@ -202,4 +219,13 @@ void readIMU ()
   Wire.endTransmission(true); //send stop signal to terminate transmission
 
   return;
+}
+
+/**Timer interrupt running off timer0. This ISR evaluates the control
+ * law and translates it into a motor command at a regular interval
+ * defined by t0_comp register.
+ */
+ISR (TIMER0_COMPA_vect)
+{  
+  calculateMotorSpeed(evaluateControlLaw());
 }
