@@ -1,7 +1,8 @@
 #include <Wire.h>
 
 //Interrupt and timer variables
-const uint16_t T1_COMP = 7811;   //=(16,000,000/prescale*freq) - 1. Sample time of 0.5s or 2Hz
+const uint16_t T1_COMP = 500;   //=(16,000,000/prescale*freq) - 1. Sample time of 0.5s or 2Hz
+const float controllerSampleTime = 1024*(T1_COMP + 1)/16000000.0;   //calculated based on T1_COMP
 
 volatile boolean interrupted; //flag to check if interrupt has run
 
@@ -23,10 +24,13 @@ unsigned long time;   //timestamp of the last time the gyro was measured. used t
 //Application variables
 boolean running;
 
-float theta;           //angle of the robot
-volatile float u;      //controller input to actuators. Must be volatile since it's accessed from the interrupt service routine
+float theta [3];              //angle of the robot
+float thetaRef = -98.5;  //IMU is not mounted along flat axis so reference is not 0
+volatile float u;         //controller input to actuators. Must be volatile since it's accessed from the interrupt service routine
 
 float a = 0.98;   //Weighting variable for complimentary filter in state estimation algorithm
+
+uint8_t count;  //counter to prevent pid loop from running before enough samples are taken
 
 void setup() 
 {
@@ -87,6 +91,7 @@ void setup()
 
   //Application variables setup
   running = true;
+  count = 0;
   
   Serial.println("Setup finished");
 
@@ -97,17 +102,29 @@ void loop()
 {
   if (running)
   {
-    if (interrupted)
+    if (interrupted)  //do anything associated with the interrupt first to prevent too much time passing
     {
-      Serial.println("Interrupt");
       interrupted = false;
+      Serial.println("Interrupt");
     }
 
-    //poll the sensors
-    theta = estimateState();
+    count++;  //increment loop counter
 
-    //interpret the controller command from the ISR
-    interpretMotorCommand (100);
+    //update theta
+    theta[2] = theta[1];
+    theta[1] = theta[0];
+    theta[0] = estimateState();
+    Serial.print("Theta: ");
+    Serial.print(theta[0]);
+    Serial.print("    u: ");
+    Serial.println(u);
+
+    //control law is undefined if any theta terms are undefined so dont send motor commands if this is true
+    if (count > 5)
+    {
+      //interpret the controller command from the ISR
+      interpretMotorCommand (u);
+    }
   }
 }
 
@@ -128,7 +145,7 @@ float estimateState ()
   
   float gtheta, atheta; //estimates of theta derived from either gyroscope or accelerometer measurements
 
-  gtheta = theta + gx * dt/1000000;   //need to define dt. Divide by 1000000 to convert to seconds
+  gtheta = theta[0] + gx * dt/1000000;   //need to define dt. Divide by 1000000 to convert to seconds
   atheta = atan2(ay,az)*180/PI; //Use atan2 function and convert to degrees.
 
   // A complimentary filter is defined as z = ax + (1-a)y. Calculate and return this value
@@ -199,5 +216,15 @@ void readIMU ()
  */
 ISR (TIMER1_COMPA_vect)
 {
+  static float kp = 300;
+  static float ki = 0;
+  static float kd = 50;
+
+  float a = (kp + ki*controllerSampleTime/2 + kd/controllerSampleTime);
+  float b = (-kp + ki*controllerSampleTime/2 - 2*kd/controllerSampleTime);
+  float c = kd/controllerSampleTime;
+
+  u = float(a*(thetaRef - theta[0]) + b*(thetaRef - theta[1]) + c*(thetaRef - theta[2]));  //apply proportional feedback
+  
   interrupted = true;
 }
