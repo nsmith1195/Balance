@@ -13,12 +13,12 @@ style.use('fivethirtyeight')
 g = 9.81    #defined as positive (m/s^2)
 
 m1 = 0.058    #Wheel mass (kg)
-m2 = 0.59    #body mass (kg)
+m2 = 0.55    #body mass (kg)
 
 j1 = 0.005    #Wheel moment of inertia (kgm^2)
-j2 = 0.09    #Body moment of inertia (kgm^2)
+j2 = 0.2    #Body moment of inertia (kgm^2)
 
-l = 0.1     #Distance from wheel center axis to body center of mass (meters)
+l = 0.0825     #Distance from wheel center axis to body center of mass (meters)
 r = 0.03    #Radius of wheels (meters)
 
 #Change of variables to simplify both derivation and translation to code
@@ -30,14 +30,17 @@ A = m2*l                #Change to help declutter
 
 #Define simulation variables
 dt = 0.01   #Timestep for the simulation
-end = 10    #End time measured in seconds
+end = 3    #End time measured in seconds
 t = np.arange(0, end, dt)  #Create a timeseries to run ODEInt against
 
-y0 = [0.1, 0.0, 1.0, 0.0]   #initial conditions for the simulation
+u1 = np.empty(0) #Empty array to record torque values (units of Nm)
 
-#Callable function to return the nonlinear dynamics of the system to ODEInt. Currently only homogenous solution
+y0 = [0.0, 0.0, 0.2, 0]   #initial conditions for the simulation
+
+#Callable function to return the nonlinear dynamics of the system to ODEInt.
 def pend (y, t):
     x, xDot, theta, thetaDot = y    #enter state into readable variables
+    u = controlInput(y)     #calculate input function for given state. U is a torque applied by the motor in Nm.
 
     #Derivatives of the state will be called: dy/dt = [v, a, omega, alpha]
     v = xDot
@@ -46,18 +49,33 @@ def pend (y, t):
     numa = A*I*np.sin(theta)*(thetaDot**2) - g*(A**2)*np.sin(theta)*np.cos(theta)
     dena = M*I - (A**2)*(np.cos(theta)**2)
 
-    a = numa/dena
+    a = numa/dena + ((I + r*A*np.cos(theta))/(r*(M*I - (A**2)*(np.cos(theta)**2))))*u   #Added input term (Element of B vector). gives weird results
 
     omega = thetaDot
 
     numt = (A**2)*(np.cos(theta)**2)*np.tan(theta)*(thetaDot**2) + g*A*M*np.sin(theta)
     dent = M*I - (A**2)*(np.cos(theta)**2)
 
-    alpha = numt/dent
+    alpha = numt/dent + (((1)/(r*A*np.cos(theta)))*(1 - M*(I + r*A*np.cos(theta))/(M*I - (A**2)*(np.cos(theta)**2))))*u     #TEST THIS
 
     dydt = [v, a, omega, alpha]     #Define the state derivative
 
     return dydt
+
+#Function defining the controller input scheme. Currently PD
+def controlInput (y):
+    global u1   #Reference the global variable u1
+
+    x, xdot, theta, thetaDot = y
+
+    kp = 10.0
+    kd = 2.0
+
+    u = kp*theta + kd*thetaDot
+
+    u1 = np.append(u1, u)
+
+    return u
 
 #Animation initializer function
 def anim_init ():
@@ -82,7 +100,12 @@ plt.plot(t,sol[:,1],'g',label='xDot')
 plt.plot(t,sol[:,2],'r',label='theta')
 plt.plot(t,sol[:,3],'k',label='thetaDot')
 
-plt.legend(loc="upper left")    #Display legend
+plt.legend(loc="lower left")    #Display legend
+
+#Plot Controller torque
+fig1,ax1 = plt.subplots() #Create empty figure
+ax1.plot(u1)                                            #TODO: u1 and t have different lengths. find out why
+plt.legend(loc="lower left")
 
 #Animate the results to give intuitive understanding of results
 fig = plt.figure()  #Create an empty figure
