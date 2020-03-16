@@ -93,13 +93,13 @@ class QuadEncoder
   private:
   const uint16_t COUNTS = 700; //Encoder wheel believed to be 700 count/rev
   
-  int32_t positionCounts;   //variables measured in counts and counts per sec respectively
-  float velocity;
+  volatile int32_t positionCounts;   //variables measured in counts and counts per sec respectively
+  volatile float velocity;
 
   uint8_t channelAPin;  //Channel A triggers interrupt
   uint8_t channelBPin;  //Channel B checks direction
 
-  unsigned long lastRun;  //Timestamp in microseconds when last run
+  volatile unsigned long lastRun;  //Timestamp in microseconds when last run
 
   public:
   QuadEncoder (uint8_t pin1, uint8_t pin2)  //Constructor method
@@ -108,7 +108,7 @@ class QuadEncoder
     velocity = 0; //Velocity is completely dependent on position in this application
 
     channelAPin = pin1;   //channelAPin has interrupt attached and triggers updates
-    channelBPin = pin2;   //channelBPin is checked in the interrupt to determine direction    
+    channelBPin = pin2;   //channelBPin is checked in the interrupt to determine direction 
   }
 
   void displayState ()
@@ -122,7 +122,7 @@ class QuadEncoder
     }
   }
 
-  void readEncoder () //Read encoder and update position and velocity
+  void readEncoder () //Read encoder and update position and velocity       TODO: Velocity calc gives weird results
   {
     unsigned long currentTime = micros();
     
@@ -144,10 +144,8 @@ class QuadEncoder
 };
 
                             //GLOBAL VARIABLE DEFINITION
-volatile int32_t encCount1;
-volatile boolean changed;
-
 boolean running = true;
+volatile boolean changed = false;
 
 unsigned long lastControllerTime;
 
@@ -157,7 +155,6 @@ QuadEncoder enc1 (2,3);   //initialize encoder 1 object
 void setup() {
   interrupts(); //make sure interrupts are enabled
   
-  encCount1 = 0;  //Initialize encoder 1 count
   lastControllerTime = 0;
   
   pinMode(2, INPUT);  //Pin 2 is the interrupt pin
@@ -169,7 +166,7 @@ void setup() {
   digitalWrite(13, HIGH); //Turn on the encoder. Will remain on for entirety of sketch
 
   //Trigger interrupt on rising edge of channel A. Checking only A halves resolution
-  attachInterrupt(2, enc1.readEncoder, RISING);                                         //TODO: figure out how to call object function from interrupt
+  attachInterrupt(INT0, enc1Read, RISING);   //Hacky solution to avoid problem of calling instance method from interrupt.
 
   Serial.begin(9600); //Start serial communication
   Serial.println("Initialized");
@@ -180,17 +177,16 @@ void setup() {
 void loop() {
   if (running)
   {
-    if (changed)      //Check if the encoder has changed value. If it has print the new value
-    {
-      Serial.print("Count: ");
-      Serial.println(encCount1);
-      changed = false;
-    }
-
-    if (millis() - lastControllerTime > 100)
+    /**if (millis() - lastControllerTime > 100)
     {
       commandMotors(pid.generateInput(encCount1)); //update motor command
       lastControllerTime = millis();
+    }**/
+        
+    if (changed)
+    {
+      enc1.displayState();
+      changed = false;
     }
   }
 
@@ -249,4 +245,10 @@ void handleSerialInput ()
   {
     pid.printLastU ();
   }
+}
+
+void enc1Read ()
+{
+  enc1.readEncoder ();
+  changed = true;
 }
