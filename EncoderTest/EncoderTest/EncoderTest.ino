@@ -47,6 +47,11 @@ class PID
     return lastU = (int32_t)(kp*err + ki*accErr + kd*diff);
   }
 
+  void getSpeed ()
+  {
+    return diff;
+  }
+
   void printAccErr ()
   {
     Serial.print ("accErr: ");
@@ -77,6 +82,67 @@ class PID
   }
 };
 
+/** Code to run the AEDS-96xx optical encoder. Due to the speed of the arduino only a quarter of possible states
+ *  are used. This class assumes that the main program has already set up the appropriate pins as inputs. The 
+ *  constructor of this class however attaches the appropriate interrupts.
+ *    It is possible that in the future the micros function may be replaced with direct register reads on an 
+ *  internal timer to increase accuracy and speed up the functions.
+ */
+class QuadEncoder
+{
+  private:
+  const uint16_t COUNTS = 700; //Encoder wheel believed to be 700 count/rev
+  
+  int32_t positionCounts;   //variables measured in counts and counts per sec respectively
+  float velocity;
+
+  uint8_t channelAPin;  //Channel A triggers interrupt
+  uint8_t channelBPin;  //Channel B checks direction
+
+  unsigned long lastRun;  //Timestamp in microseconds when last run
+
+  public:
+  QuadEncoder (uint8_t pin1, uint8_t pin2)  //Constructor method
+  {
+    positionCounts = 0; //Relative encoder always starts at position 0
+    velocity = 0; //Velocity is completely dependent on position in this application
+
+    channelAPin = pin1;   //channelAPin has interrupt attached and triggers updates
+    channelBPin = pin2;   //channelBPin is checked in the interrupt to determine direction    
+  }
+
+  void displayState ()
+  {
+    if (Serial) //will only work if serial communication is running
+    {
+      Serial.print ("Position: ");
+      Serial.println (positionCounts);
+      Serial.print ("Velocity: ");
+      Serial.println (velocity);
+    }
+  }
+
+  void readEncoder () //Read encoder and update position and velocity
+  {
+    unsigned long currentTime = micros();
+    
+    if (digitalRead(channelBPin))
+    {
+      positionCounts++;
+
+      velocity = (float)(1000000/(currentTime - lastRun)); //calculate the velocity (in count/sec) and convert to float
+    }
+    else
+    {
+      positionCounts--;
+
+      velocity = (float)(-1000000/(currentTime - lastRun)); 
+    }
+    
+    lastRun = currentTime; //update lastRun  
+  }
+};
+
                             //GLOBAL VARIABLE DEFINITION
 volatile int32_t encCount1;
 volatile boolean changed;
@@ -86,6 +152,7 @@ boolean running = true;
 unsigned long lastControllerTime;
 
 PID pid (100,10,0,100);  //define pid object
+QuadEncoder enc1 (2,3);   //initialize encoder 1 object
 
 void setup() {
   interrupts(); //make sure interrupts are enabled
@@ -99,9 +166,10 @@ void setup() {
   pinMode(10, OUTPUT); //pwm output for forward motor command
   pinMode(11, OUTPUT); //pwm output for reverse motor command
 
-  attachInterrupt(INT0, enc1, RISING); //Trigger interrupt on rising edge of channel A. Checking only A halves resolution
-
   digitalWrite(13, HIGH); //Turn on the encoder. Will remain on for entirety of sketch
+
+  //Trigger interrupt on rising edge of channel A. Checking only A halves resolution
+  attachInterrupt(2, enc1.readEncoder, RISING);                                         //TODO: figure out how to call object function from interrupt
 
   Serial.begin(9600); //Start serial communication
   Serial.println("Initialized");
@@ -153,23 +221,6 @@ void commandMotors (int32_t u)
   {
     analogWrite (11, abs(u));
   }
-
-  //Serial.print ("u: ");
-  //Serial.println(u);
-}
-
-void enc1()
-{
-  if (digitalRead(3)) //Read channel A. If high moving forward, else backwards
-  {
-    encCount1++;
-  }
-  else
-  {
-    encCount1--;
-  }  
-
-  changed = true; //Tell program count has changed
 }
 
 void handleSerialInput ()
