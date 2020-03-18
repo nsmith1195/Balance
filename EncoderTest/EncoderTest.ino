@@ -7,7 +7,7 @@ class PID
 
   int32_t err;     //Tracked variables
   int32_t accErr;
-  int32_t diff;
+  float diff;       //float because it is read from encoder
   
   int32_t lastCount;  //previous position for speed calculations
   int32_t reference;  //reference position specified in counts
@@ -37,14 +37,13 @@ class PID
    * program. A timer interrupt is to be used to ensure it is. The controller assumes continuous
    * time so dt must be small to prevent errors.
     */
-  int32_t generateInput (int32_t count)
+  int32_t generateInput (int32_t count, float diff)
   {
     err = reference - count;
     accErr += err;
-    diff = (int32_t)(count - lastCount)/dt;
     lastCount = count;  //current count becomes last count
     
-    return lastU = (int32_t)(kp*err + ki*accErr + kd*diff);
+    return lastU = -(int32_t)(kp*err + ki*accErr + kd*diff);
   }
 
   void getSpeed ()
@@ -93,18 +92,17 @@ class QuadEncoder
   private:
   const uint16_t COUNTS = 700; //Encoder wheel believed to be 700 count/rev
   
-  volatile int32_t positionCounts;   //variables measured in counts and counts per sec respectively
-  volatile float velocity;
+  volatile int32_t positionCounts [2];   //last and current positions. Measured in counts
+  volatile float velocity;        //velocity measure in counts per second
 
   uint8_t channelAPin;  //Channel A triggers interrupt
   uint8_t channelBPin;  //Channel B checks direction
 
-  volatile unsigned long lastRun;  //Timestamp in microseconds when last run
-
   public:
   QuadEncoder (uint8_t pin1, uint8_t pin2)  //Constructor method
   {
-    positionCounts = 0; //Relative encoder always starts at position 0
+    positionCounts[0] = 0; //Relative encoder always starts at position 0
+    positionCounts[1] = 0;
     velocity = 0; //Velocity is completely dependent on position in this application
 
     channelAPin = pin1;   //channelAPin has interrupt attached and triggers updates
@@ -116,30 +114,41 @@ class QuadEncoder
     if (Serial) //will only work if serial communication is running
     {
       Serial.print ("Position: ");
-      Serial.println (positionCounts);
+      Serial.println (positionCounts[0]);
       Serial.print ("Velocity: ");
       Serial.println (velocity);
     }
   }
 
-  void readEncoder () //Read encoder and update position and velocity       TODO: Velocity calc gives weird results
+  int32_t getPosition ()
   {
-    unsigned long currentTime = micros();
-    
+    return positionCounts[0];
+  }
+
+  float getVelocity ()
+  {
+    return velocity;
+  }
+
+  //Read encoder and update position and velocity
+  void readEncoder ()
+  {    
     if (digitalRead(channelBPin))
     {
-      positionCounts++;
-
-      velocity = (float)(1000000/(currentTime - lastRun)); //calculate the velocity (in count/sec) and convert to float
+      positionCounts[0]++;
     }
     else
     {
-      positionCounts--;
-
-      velocity = (float)(-1000000/(currentTime - lastRun)); 
+      positionCounts[0]--;
     }
-    
-    lastRun = currentTime; //update lastRun  
+  }
+
+  void updateVelocity ()
+  {    
+    //dt is constant (0.1s)
+    velocity = (float)((positionCounts[0] - positionCounts[1])/(0.1)); //dt is constant since the motor is moving slow
+
+    positionCounts [1] = positionCounts[0]; //update the value of the previous position
   }
 };
 
@@ -149,23 +158,37 @@ volatile boolean changed = false;
 
 unsigned long lastControllerTime;
 
-PID pid (100,10,0,100);  //define pid object
+PID pid (3,0,0,100);  //define pid object
 QuadEncoder enc1 (2,3);   //initialize encoder 1 object
 
-void setup() {
-  interrupts(); //make sure interrupts are enabled
-  
+void setup() {  
   lastControllerTime = 0;
   
   pinMode(2, INPUT);  //Pin 2 is the interrupt pin
   pinMode(3, INPUT);
+  pinMode(5, OUTPUT); //pwm output for forward motor command
+  pinMode(6, OUTPUT); //pwm output for reverse motor command  
   pinMode(13, OUTPUT);
-  pinMode(10, OUTPUT); //pwm output for forward motor command
-  pinMode(11, OUTPUT); //pwm output for reverse motor command
-
+  
   digitalWrite(13, HIGH); //Turn on the encoder. Will remain on for entirety of sketch
 
-  //Trigger interrupt on rising edge of channel A. Checking only A halves resolution
+  //Setup timer interrupt to update velocity
+  noInterrupts ();  //turn off interrupts
+
+  TCCR1A = 0;   //Set all bits to 0 to be changed later
+  TCCR1B = 0;
+
+  TCCR1B |= (1 << WGM12); //CTC Mode on timer 1 comparing to OCR1A
+  TCCR1B |= (1 << CS12);  //256 prescaler
+
+  TIMSK1 |= (1 << OCIE1A);  //Enable compare match interrupt for timer 1
+  
+  OCR1A = 6249; //10 Hz
+  TCNT1 = 0;   //initialize counter to 0
+
+  interrupts ();  //make sure interrupts are turned back on
+
+  //Trigger interrupt to read encoder on rising edge of channel A. Checking only A halves resolution
   attachInterrupt(INT0, enc1Read, RISING);   //Hacky solution to avoid problem of calling instance method from interrupt.
 
   Serial.begin(9600); //Start serial communication
@@ -177,17 +200,13 @@ void setup() {
 void loop() {
   if (running)
   {
-    /**if (millis() - lastControllerTime > 100)
+    if (millis() - lastControllerTime > 100)
     {
-      commandMotors(pid.generateInput(encCount1)); //update motor command
+      commandMotors(pid.generateInput(enc1.getPosition(), enc1.getVelocity ())); //update motor command
       lastControllerTime = millis();
-    }**/
-        
-    if (changed)
-    {
-      enc1.displayState();
-      changed = false;
     }
+
+    Serial.println (enc1.getPosition());
   }
 
   if (Serial.available() > 0)
@@ -196,9 +215,15 @@ void loop() {
   }
 }
 
+/**Function to process the input u generated by the controller and convert it into motor
+ * voltages. The motor output is insignificant at values less than ~125 due to the friction
+ * in the encoder so care must be taken when tuning a linear controller.
+ */
 void commandMotors (int32_t u)
 {
-  u = map (u, -2550, 2550, -255, 255);  //map down the values of u
+  Serial.println (u);
+  
+  u /= 10;  //Scale down input prior to sending to motor
   
   if (u > 255) //constrain u to the limits of analogWrite function
   {
@@ -211,11 +236,13 @@ void commandMotors (int32_t u)
 
   if (u >= 0)
   {
-    analogWrite (10, u);
+    analogWrite (5, u);
+    analogWrite (6, 0);    //Motor will lock up if the other pin isn't written to 0
   }
   else
   {
-    analogWrite (11, abs(u));
+    analogWrite (5, 0);
+    analogWrite (6, abs(u));
   }
 }
 
@@ -223,27 +250,34 @@ void handleSerialInput ()
 {
   char received = Serial.read();
 
-  if (received == 'q')
+  switch (received)
   {
-    analogWrite (10,0);
-    analogWrite (11,0);
-    running = false;
-  }
-  if (received == 'e')
-  {
-    pid.printErr();
-  }
-  if (received == 'i')
-  {
-    pid.printAccErr();
-  }
-  if (received == 'r')
-  {
-    pid.printReference ();
-  }
-  if (received == 'u')
-  {
-    pid.printLastU ();
+    case 'q':
+      analogWrite (5,0);
+      analogWrite (6,0);
+      running = false;
+      break;
+    case 'e':
+      pid.printErr ();
+      break;
+    case 'i':
+      pid.printAccErr ();
+      break;
+    case 'r':
+      pid.printReference ();
+      break;
+    case 'u':
+      pid.printLastU ();
+      break;
+    case 'a':
+      commandMotors (-2550);
+      break;
+    case 's':
+      commandMotors (2550);
+      break;
+    case 'x':
+      enc1.displayState ();
+      break;
   }
 }
 
@@ -251,4 +285,23 @@ void enc1Read ()
 {
   enc1.readEncoder ();
   changed = true;
+}
+
+//Function to return the 4 point moving average of velocity for the most accurate estimate since measurements fluctuate
+float updateAverageVelocity (float vCurrent)
+{
+  static float velocity [3] = {0, 0, 0};  //4th point is vCurrent
+
+  float average = (vCurrent + velocity[0] + velocity[1] + velocity[2])/4.0;
+
+  velocity[2] = velocity[1];  //Move each stored velocity back a time step
+  velocity[1] = velocity[0];
+  velocity[0] = vCurrent;
+
+  return average;
+}
+
+ISR (TIMER1_COMPA_vect)
+{
+  enc1.updateVelocity ();
 }
