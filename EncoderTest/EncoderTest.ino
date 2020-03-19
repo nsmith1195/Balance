@@ -43,7 +43,7 @@ class PID
     accErr += err;
     lastCount = count;  //current count becomes last count
     
-    return lastU = -(int32_t)(kp*err + ki*accErr + kd*diff);
+    return lastU = (int32_t)(kp*err + ki*accErr - kd*diff);
   }
 
   void getSpeed ()
@@ -158,7 +158,7 @@ volatile boolean changed = false;
 
 unsigned long lastControllerTime;
 
-PID pid (3,0,0,100);  //define pid object
+PID pid (35,4,3,10);  //define pid object
 QuadEncoder enc1 (2,3);   //initialize encoder 1 object
 
 void setup() {  
@@ -200,13 +200,13 @@ void setup() {
 void loop() {
   if (running)
   {
-    if (millis() - lastControllerTime > 100)
+    if (millis() - lastControllerTime > 10)
     {
       commandMotors(pid.generateInput(enc1.getPosition(), enc1.getVelocity ())); //update motor command
       lastControllerTime = millis();
     }
 
-    Serial.println (enc1.getPosition());
+    Serial.println(enc1.getPosition());
   }
 
   if (Serial.available() > 0)
@@ -221,7 +221,7 @@ void loop() {
  */
 void commandMotors (int32_t u)
 {
-  Serial.println (u);
+  //Serial.println (u);
   
   u /= 10;  //Scale down input prior to sending to motor
   
