@@ -1,5 +1,5 @@
 # Balance
-![WIP Gif](./Images/WIP_Dynamics.gif)
+![WIP Gif](./Images/WIP_Dynamics.gif =250x)
 
 Balancing Robot Repository
 
