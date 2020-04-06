@@ -1,4 +1,6 @@
 # Balance
+![WIP Gif](./Images/WIP_Dynamics.gif)
+
 Balancing Robot Repository
 
 Robot acts as an inverted pendulum with the goal of remaining stable while being mobile in at least one direction. Turning may be added as a later feature as wheels are independently actuated.
@@ -13,4 +15,4 @@ Power is provided to the system by a 9V battery connected to the L298N. The inte
 To measure each of the robot's degrees of freedom there are several sensors onboard. An inertial measurement unit uses measurements from a gyroscope and accelerometer to estimate the angle theta in the plane of motion. To combine these measures and reduce noise a complementary filter is used. An encoder is also used on each of the two wheels to measure the distance the robot has traveled. The angular position is incremented every time an interrupt is triggered by the rising edge of an encoder pulse. This has the consequence of halving the number of detectable encoder states but in this application it should be acceptable. Velocity estimation is done at a constant frequency by dividing the number of encoder counts measured over the time period. This was done instead of dividing each encoder step by the time between each step to avoid problems around 0 velocity where the estimator never finds out it stopped. This will likely be changed in the future to a more sophisticated algorithm due to issues with integration errors in this implementation.
 
 #Dynamic Model
-The equations of motion for a balancing robot were derived and will be used in the future to simulate and design a linear control system using some form of full state feedback to ensure both the translational and rotational degrees of freedom are stable. In the initial implementation, however, a simple pid loop will be used to stabilize the rotational axis while allowing translation to be free.
+The full equations of motion were derived for a Wheeled Inverted Pendulum (WIP) and were used to implemented in Scipy. A linearized version was also found and is being implemented in the same file. This linearized model was used to find a transfer function which will be used for analysis and controller design later.
