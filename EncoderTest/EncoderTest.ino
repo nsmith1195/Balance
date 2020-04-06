@@ -1,11 +1,11 @@
 class PID
 {
   private:
-  uint16_t kp;  //Controller gains
-  uint16_t ki;
-  uint16_t kd;
+  float kp;  //Controller gains
+  float ki;
+  float kd;
 
-  int32_t err;     //Tracked variables
+  int32_t err [2];     //Tracked variables
   int32_t accErr;
   float diff;       //float because it is read from encoder
   
@@ -14,20 +14,18 @@ class PID
 
   int32_t lastU;
 
-  unsigned long dt; //time step for the controller
+  float t; //time step for the controller (seconds)
 
   public:
-  PID (uint16_t p, uint16_t i, uint16_t d, unsigned long t)
+  PID (float p, float i, float d, float dt)
   {
     kp = p;
     ki = i;
     kd = d;
 
-    err = 0;
-    accErr = 0;
-    diff = 0;
+    err [0] = reference;  //initial errors are the entire distance from reference to 0
+    err [1] = reference;
 
-    lastCount = 0;  //initialize both to zero
     reference = 0;
 
     t = dt;
@@ -37,13 +35,18 @@ class PID
    * program. A timer interrupt is to be used to ensure it is. The controller assumes continuous
    * time so dt must be small to prevent errors.
     */
-  int32_t generateInput (int32_t count, float diff)
+  int32_t generateInput (int32_t count)
   {
-    err = reference - count;
-    accErr += err;
-    lastCount = count;  //current count becomes last count
-    
-    return lastU = (int32_t)(kp*err + ki*accErr - kd*diff);
+    float a = (float)(kp + ki*t/2.0 + kd/t);
+    float b = (float)(-kp + ki*t/2.0 - 2*kd/t);
+    float c = (float)kd/t;
+
+    lastU = (int32_t)(lastU + a*(reference - count) + b*err[1] + c*err[2]);   //Discrete time pid loop
+
+    err[1] = err[0];
+    err[0] = reference - count;
+
+    return lastU;
   }
 
   void getSpeed ()
@@ -60,7 +63,7 @@ class PID
   void printErr ()
   {
     Serial.print ("Err: ");
-    Serial.println (err);
+    Serial.println (err[0]);
   }
 
   void printLastU ()
@@ -158,7 +161,7 @@ volatile boolean changed = false;
 
 unsigned long lastControllerTime;
 
-PID pid (35,4,3,10);  //define pid object
+PID pid (1.5,1,0,0.01);  //define pid object
 QuadEncoder enc1 (2,3);   //initialize encoder 1 object
 
 void setup() {  
@@ -194,7 +197,7 @@ void setup() {
   Serial.begin(9600); //Start serial communication
   Serial.println("Initialized");
 
-  pid.setReference (100); //Change the reference value
+  pid.setReference (200); //Change the reference value
 }
 
 void loop() {
@@ -202,7 +205,7 @@ void loop() {
   {
     if (millis() - lastControllerTime > 10)
     {
-      commandMotors(pid.generateInput(enc1.getPosition(), enc1.getVelocity ())); //update motor command
+      commandMotors(pid.generateInput(enc1.getPosition())); //update motor command
       lastControllerTime = millis();
     }
 
@@ -222,9 +225,7 @@ void loop() {
 void commandMotors (int32_t u)
 {
   //Serial.println (u);
-  
-  u /= 10;  //Scale down input prior to sending to motor
-  
+    
   if (u > 255) //constrain u to the limits of analogWrite function
   {
     u = 255;
