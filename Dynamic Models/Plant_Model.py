@@ -1,3 +1,8 @@
+# Simulation of the nonlinear dynamics of the Wheeled Inverted Pendulum (WIP). Dynamics are
+# integrated with the ODEInt function from scipy to allow testing of control laws applied
+# at each time step. The outputs of the program are traces of the state variables
+# [x, xdot, theta, thetaDot] as well as an animation of the WIP.
+
 from scipy.integrate import odeint
 
 import matplotlib.pyplot as plt
@@ -43,10 +48,12 @@ u1 = np.empty(0) #Empty array to record torque values (units of Nm)
 
 y0 = [0.0, 0.0, 0.2, 0.0]   #initial conditions for the simulation
 
+# Return the energy in the system at this state. Used to verify energy is conserved
+# in this model.
 def calculateEnergy (y):
     x, xDot, theta, thetaDot = y
 
-    energy = 0.5 * M * xDot**2 + 0.5 * I * thetaDot**2 + m2*l*np.cos(theta)*xDot*thetaDot - (j1/r)*xDot*thetaDot + m2*g*l*np.cos(theta)
+    energy = 0.5 * M * xDot**2 + 0.5 * I * thetaDot**2 + m2*l*np.cos(theta)*xDot*thetaDot + m2*g*l*np.cos(theta)
 
     return energy
 
@@ -74,12 +81,6 @@ def pend (y, t):
     dydt = [v, a, omega, alpha]     #Define the state derivative
 
     return dydt
-
-#Linearized model 
-def linearPend (y,t):
-    u = controlInput(y)
-    dydt = A.dot(y) + B*u
-    return dydt[0,:]
 
 #Function defining the controller input scheme. Currently PD
 def controlInput (y):
@@ -110,7 +111,7 @@ def animate(i):
     return wheel,
 
 #Run simulation
-sol = odeint (linearPend, y0, t)
+sol = odeint (pend, y0, t)
 
 initialEnergy = calculateEnergy (y0)    #Initial system energy for energy_err calculations
 
