@@ -29,8 +29,14 @@
 	\begin{figure}[h]
 		\includegraphics[width=\linewidth]{{"System Setup"}}
 		\caption{Overview and Definitions}	
-		\label{System Definitions}	
+		\label{fig:System Definitions}	
 	\end{figure}
+	
+	As shown in \ref{fig:System Definitions} the configuration of the system is given by x and $\theta$. The variable $\phi$ is the rotation of the wheel relative to the vertical axis and is completely determined by x:
+	
+	\centerline{$x = r\phi$ and	$\dot{x} = r \dot{\phi}$}
+	
+	Positive translations are to the right and position rotations are clockwise. Also a positive torque is one which tends to make the WIP accelerate in the positive direction (and cause a negative rotation).
 
 	Since there are two bodies in this system the Euler-Lagrange equation will be used to derive the equations of motion for the WIP:
 	\begin{equation}
@@ -38,7 +44,7 @@
 		\frac{d}{dt}\left(\frac{\partial L}{\partial \dot{q}_i}\right) - \frac{\partial L}{\partial q_i} = F_i
 	\end{equation}
 	
-	where $q = \lbrace x,\theta \rbrace$ are the generalized coordinates of the system and $F = \lbrace \frac{\tau}{r}, -\tau \rbrace$ are the generalized forces acting on each axis. The Lagrangian is also defined as the difference between the kinetic and potential energies of the system: 
+	where $q = \lbrace x,\theta \rbrace$ are the generalized coordinates defining the configuration of the system and $F = \lbrace \frac{\tau}{r}, -\tau \rbrace$ are the generalized forces acting on each axis. The Lagrangian is also defined as the difference between the kinetic and potential energies of the system: 
 	\begin{equation}
 		\label{eqn:LagDef}
 		L = K - U
@@ -51,10 +57,10 @@
 		\centering
 		\includegraphics[width=2in]{{"Coordinate Reference"}}
 		\caption{Definitions of $\dot{\vec{x}}_1$ and $\dot{\vec{x}}_2$}	
-		\label{System Definitions}	
+		\label{fig:VectorDefinitions}	
 	\end{figure}
 	
-	To continue ${\vert \dot{\vec{x}}_1 \vert}^2$ and ${\vert \dot{\vec{x}}_2\vert}^2$ must be evaluated:
+	To continue ${\vert \dot{\vec{x}}_1 \vert}^2$ and ${\vert \dot{\vec{x}}_2\vert}^2$ must be evaluated. Given the definitions of these vectors in \ref{fig:VectorDefinitions}:
 	
 	%Define the x1 vector and solve for the square of its magnitude
 	$${\vec{x}_1} = x \hat{i}$$
@@ -129,7 +135,7 @@
 		\ddot{\theta} = \frac{m_2^2 L^2 sin(\theta)}{m_2^2 L^2 cos(\theta) - MI}\dot{\theta}^2 - \frac{Mm_2 gLsin(\theta)}{m_2^2 L^2 cos(\theta) - MI} + \left[ \frac{rM + m_2 L}{r(m_2^2 L^2 cos(\theta) - MI)} \right] \tau
 	\end{equation}
 	
-	Putting these into state space representation:
+	These two non-linear equations describe the motion of the system in the configuration space. To make simulation easier these are converted into the state space by adding the velocities associated with each coordinate:
 	
 	\begin{equation}
 		\label{eqn:nonLinSS}
@@ -149,7 +155,7 @@
 		+
 		\begin{bmatrix}
 			0																	\\
-			-\frac{I + rm_2 Lcos(\theta)}{r(m_2^2 L^2 cos(\theta) - MI)}			\\
+			-\frac{I + rm_2 Lcos(\theta)}{r(m_2^2 L^2 cos(\theta) - MI)}		\\
 			0																	\\
 			\frac{rM + m_2 L}{r(m_2^2 L^2 cos(\theta) - MI)}
 		\end{bmatrix}
@@ -157,11 +163,52 @@
 	\end{equation}
 	
 	\subsection{Linearization}
+	Equation \ref{eqn:nonLinSS} can be easily simulated with tools such as Scipy's ODEint function to create a reasonable representation of the system. It is not, however, easy to develop control laws for a non-linear system and so it is necessary to linearize it. This will be done about the upwards stationary point $\vec{x}^* = [x, 0, 0, 0]^T$. There is an x in this state since there is a symmetry in x. Currently the system is of the form:
+	
+	\centerline{$\dot{\vec{x}} = \vec{f}(\vec{x},u)$, where in this case $u = \tau$}
+	Linearizing would put the system into the form:
+	$$\dot{\vec{x}} = A\vec{x} + Bu$$
+	
+	To generate A and B the following formula must be applied:
+	$A = \left[ \frac{\partial \vec{f}(\vec{x},u)}{\partial \vec{x}} \right]_{x^*,u^*}$ and $B = \left[ \frac{\partial \vec{f}(\vec{x},u)}{\partial u} \right]_{x^*,u^*}$
+	
+	Doing so yields:
+	
+	\begin{equation}
+		\label{eqn:linSS}
+		A = \begin{bmatrix}
+			0 & 1 & 0 & 0	\\
+			0 & 0 & \frac{m_2^2 L^2 g}{m_2^2 L^2 - MI} & 0 \\
+			0 & 0 & 0 & 1	\\
+			0 & 0 & -\frac{Mm_2 gL}{m_2^2 L^2 - MI} & 0
+		\end{bmatrix}
+		\quad and	\quad B = \begin{bmatrix}
+			0	\\
+			-\frac{I + rm_2 L}{r(m_2^2 L^2 - MI)}	\\
+			0	\\
+			\frac{rM + m_2 L}{r(m_2^2 L^2 - MI)}
+		\end{bmatrix}
+	\end{equation}
+	
+	The output equation will initially return only $\theta$ and so will be:
+	
+	$y = \vec{C} \vec{x} + Du$, where $\vec{C} = [0, 0, 1, 0] and D = 0$ 
+	
 	\subsection{Transfer Function}
-		
-	\section{First Section}
-	This is text
-	\subsection{Begining Things}
-	Some beginning things
+	Due to some quirks in the Python-Controls library with regards to analyzing state space models, the state space representation derived will be converted into a transfer function to make analysis easier to interpret. Doing so uses:
+	
+	\begin{equation}
+		\label{eqn:SS2TF}
+		\frac{\theta (s)}{\tau (s)} = \vec{C}(sI - A)^{-1}\vec{B} + D
+	\end{equation}
+	
+	Applying this to the current system gives:
+	
+	\begin{equation}
+		\label{eqn:SISOTF}
+		\frac{\theta (s)}{\tau (s)} = \frac{a}{s^2 - b}
+	\end{equation}
+	
+	\centerline{where $a = \frac{rM + m_2 L}{r(m_2^2 L^2 - MI)}$ and $b = -\frac{Mm_2 gL}{m_2^2 L^2 - MI}$}
 	
 \end{document}
