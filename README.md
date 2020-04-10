@@ -3,7 +3,7 @@
 
 Balancing Robot Repository
 
-Robot acts as an inverted pendulum with the goal of remaining stable while being mobile in at least one direction. Turning may be added as a later feature as wheels are independently actuated.
+Robot acts as an inverted pendulum with the goal of remaining stable while being mobile in at least one direction. Turning may be added as a later feature as wheels are independently actuated. A full report on this project can be found in Final.pdf
 
 ## Hardware
 Almost all hardware used in this project is secondhand. The structural components come from an erectors set while the motors and encoders both come from an old printer. The benefit of using the motors and encoders from the printer is that they are already mounted to a backplate which can be cut to the proper size and shape to attach to the robot's body. A breadboard is also attached to the body to mount the IMU and provide a location to make all necessary connections.

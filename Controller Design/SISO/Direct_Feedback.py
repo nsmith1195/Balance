@@ -34,7 +34,7 @@ a43 = -(M*m2*g*l)/((m2**2)*(l**2) - M*I)
 b2 = -(I + r*m2*l)/(r*((m2**2)*(l**2) - M*I))
 b4 = (r*M + m2*l)/(r*((m2**2)*(l**2) - M*I))
 
-plant = tf (b4, ([1, 0, -a43]))
+plant = tf (-b4, ([1, 0, -a43]))
 
 print (plant)
 
@@ -59,9 +59,9 @@ for col in rlist.T:
     plt.plot(col.real, col.imag)
 
 #Pick two gains and annotate them on the plot to show the direction the poles move
-i = 2
-plt.annotate ('K = {:.2f}'.format(klist[i]), (rlist[i,1].real,rlist[i,1].imag), (10,0.005), arrowprops=dict(facecolor='black', shrink=0.05, width=2))
-i = 5
-plt.annotate ('K = {:.2f}'.format(klist[i]), (rlist[i,1].real,rlist[i,1].imag), (12,-0.005), arrowprops=dict(facecolor='black', shrink=0.05, width=2))
+i = 10
+plt.annotate ('K = {:.2f}'.format(klist[i]), (rlist[i,1].real,rlist[i,1].imag), (8,-400), arrowprops=dict(facecolor='black', shrink=0.05, width=2))
+i = 70
+plt.annotate ('K = {:.2f}'.format(klist[i]), (rlist[i,1].real,rlist[i,1].imag), (5,500), arrowprops=dict(facecolor='black', shrink=0.05, width=2))
 
 plt.show ()

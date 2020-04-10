@@ -1,0 +1,167 @@
+\documentclass{article}
+\title{Development Of A Wheeled Inverted Pendulum}
+\author{Nathan Smith}
+\date{April 8th, 2020}
+
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{placeins}
+\usepackage[margin=1.0in]{geometry}	%Change the page margins to fit long equations
+\usepackage{amsmath}
+
+\graphicspath{{"../Dynamic Models/Images/"}}
+
+%\renewcommand*{\vec}[1]{\mathbf{#1}} %Redefine vector command to make bold instead of overhead arrow
+
+\begin{document}
+	\pagenumbering{gobble}
+	\maketitle
+	
+	\newpage
+	\tableofcontents
+
+	\newpage
+	\pagenumbering{arabic}	
+	
+	\section{Dynamic Model}
+	\subsection{Derivation}
+	
+	\begin{figure}[h]
+		\includegraphics[width=\linewidth]{{"System Setup"}}
+		\caption{Overview and Definitions}	
+		\label{System Definitions}	
+	\end{figure}
+
+	Since there are two bodies in this system the Euler-Lagrange equation will be used to derive the equations of motion for the WIP:
+	\begin{equation}
+		\label{eqn:EulerLagrange}	
+		\frac{d}{dt}\left(\frac{\partial L}{\partial \dot{q}_i}\right) - \frac{\partial L}{\partial q_i} = F_i
+	\end{equation}
+	
+	where $q = \lbrace x,\theta \rbrace$ are the generalized coordinates of the system and $F = \lbrace \frac{\tau}{r}, -\tau \rbrace$ are the generalized forces acting on each axis. The Lagrangian is also defined as the difference between the kinetic and potential energies of the system: 
+	\begin{equation}
+		\label{eqn:LagDef}
+		L = K - U
+	\end{equation}
+	
+	The Kinetic energy can be expressed as the sum of the translational and rotational kinetic energies of each body:
+	$$K = \frac{1}{2} m_1 {\vert \dot{\vec{x}}_1 \vert}^2 + \frac{1}{2}m_2 {\vert \dot{\vec{x}}_2\vert}^2 + \frac{1}{2}J_1 \dot{\phi}^2 + \frac{1}{2}J_2 \dot{\theta}^2$$
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=2in]{{"Coordinate Reference"}}
+		\caption{Definitions of $\dot{\vec{x}}_1$ and $\dot{\vec{x}}_2$}	
+		\label{System Definitions}	
+	\end{figure}
+	
+	To continue ${\vert \dot{\vec{x}}_1 \vert}^2$ and ${\vert \dot{\vec{x}}_2\vert}^2$ must be evaluated:
+	
+	%Define the x1 vector and solve for the square of its magnitude
+	$${\vec{x}_1} = x \hat{i}$$
+	$$ \dot{\vec{x}}_1 = \dot{x} \hat{i}$$
+	$${\vert \dot{\vec{x}}_1 \vert}^2 = \dot{x}^2$$
+	
+	%Define the x2 vector and solve for square of its magnitude
+	$$\vec{x}_2 = (x + Lsin(\theta)\hat{i} + L cos(\theta) \hat{j}$$
+	$$\dot{\vec{x}}_2 = (\dot{x} + Lcos(\theta)\dot{\theta})\hat{i} - Lsin(\theta)\dot{\theta}\hat{j}$$
+	$$\vert \dot{\vec{x}}_2\vert = \sqrt{(\dot{x} + Lcos(\theta)\dot{\theta})^2 + (-Lsin(\theta) \dot{\theta})^2}$$
+	$$\vert \dot{\vec{x}}_2\vert = \sqrt{\dot{x}^2 + 2Lcos(\theta)\dot{x}\dot{\theta} + L^2 cos^2 (\theta)\dot{\theta}^2 + L^2 sin^2(\theta) \dot{\theta}^2}$$
+	$${\vert \dot{\vec{x}}_2\vert}^2 = \dot{x}^2 + 2Lcos(\theta)\dot{x}\dot{\theta} + L^2 \dot{\theta}^2$$
+	
+	Substituting back into the appropriate terms in the Kinetic energy along with the definition of $\phi$:
+	$$K = \frac{1}{2}m_1 \dot{x}^2 + \frac{1}{2}m_2 (\dot{x}^2 + 2Lcos(\theta)\dot{x}\dot{\theta} + L^2 \dot{\theta}^2) + \frac{1}{2}J_1 \frac{\dot{x}^2}{r^2} + \frac{1}{2}J_2 \dot{\theta}^2$$
+	$$K = \frac{1}{2}(m_1 + m_2 + \frac{J_1}{r^2})\dot{x}^2 + m_2 Lcos(\theta)\dot{x}\dot{\theta} + \frac{1}{2}(m_2 L^2 + J_2)\dot{\theta}^2$$
+
+	This equation is split into three terms, linear acceleration, angular acceleration, and an interaction term between linear and angular velocity. Therefore it seems reasonable to define an effective mass and moment of inertia as $M = m_1 + m_2 + \frac{J_1}{r^2}$ and $I = m_2 L^2 + J_2$.
+	
+	Substituting these into the Kinetic energy gives:
+	\begin{equation}
+		\label{eqn:Kinetic}
+		K = \frac{1}{2}M\dot{x}^2 + m_2 Lcos(\theta)\dot{x}\dot{\theta} + \frac{1}{2}I\dot{\theta}^2
+	\end{equation}
+	
+	Potential energy can be found as:
+	\begin{equation}
+		\label{eqn:Potential}
+		U = m_2 gLcos(\theta)
+	\end{equation}		
+	
+	Substituting \ref{eqn:Kinetic} and \ref{eqn:Potential} into \ref{eqn:LagDef} gives the full Lagrangian for the system:
+	
+	\begin{equation}
+		\label{eqn:Lagrangian}
+		L = \frac{1}{2}M\dot{x}^2 + m_2 Lcos(\theta)\dot{x}\dot{\theta} + \frac{1}{2}I\dot{\theta}^2 - m_2 gLcos(\theta)
+	\end{equation}
+	
+	The Lagrangian must now be substituted into \ref{eqn:EulerLagrange} for each generalized coordinate. Starting with x:
+	
+	$$\frac{\partial L}{\partial x} = 0$$
+	
+	$$\frac{\partial L}{\partial \dot{x}} = M\dot{x} + m_2 Lcos(\theta)\dot{\theta}$$
+	$$\frac{d}{dt}\left(\frac{\partial L}{\partial \dot{x}}\right) = M\ddot{x} + m_2 Lcos(\theta)\ddot{\theta} - m_2 Lsin(\theta)\dot{\theta}^2$$
+	
+	\begin{equation}
+		\label{eqn:EOM1}
+		M\ddot{x} + m_2 Lcos(\theta)\ddot{\theta} - m_2 Lsin(\theta)\dot{\theta}^2 = \frac{\tau}{r}
+	\end{equation}		
+	
+	Equation \ref{eqn:EOM1} is the first equation of motion for the system. Repeating this for $\theta$ will give the second:
+	
+	$$\frac{\partial L}{\partial \theta} = -m_2 Lsin(\theta) \dot{x}\dot{\theta} + m_2 gLsin(\theta)$$
+	
+	$$\frac{\partial L}{\partial \dot{\theta}} = m_2 Lcos(\theta)\dot{x} + I\dot{\theta}$$
+	$$\frac{d}{dt} \left( \frac{\partial L}{\partial \dot{\theta}} \right) = m_2 Lcos(\theta)\ddot{x} - m_2 Lsin(\theta)\dot{x}\dot{\theta} + I\ddot{\theta}$$
+	
+	\begin{equation}
+		\label{eqn:EOM2}
+		m_2 Lcos(\theta)\ddot{x} - m_2 Lsin(\theta)\dot{x}\dot{\theta} + I\ddot{\theta} + m_2 Lsin(\theta) \dot{x}\dot{\theta} - m_2 gLsin(\theta) = -\tau
+	\end{equation}
+	
+	Equations \ref{eqn:EOM1} and \ref{eqn:EOM2} both depend on $\ddot{x}$ and $\ddot{\theta}$ and must be solved in terms of these simultaneously. Doing this yields:
+	
+	\begin{equation}
+		\label{eqn:linAcc}
+		\ddot{x} = - \frac{m_2 LIsin(\theta)}{m_2^2 L^2 cos(\theta) - MI}\dot{\theta}^2 + \frac{m_2^2 L^2 g}{m_2^2 L^2 cos(\theta) - MI}cos(\theta)sin(\theta) - \left[ \frac{I + rm_2 Lcos(\theta)}{r(m_2^2 L^2 cos(\theta) - MI)} \right] \tau
+	\end{equation}
+	
+	\begin{equation}
+		\label{eqn:angAcc}
+		\ddot{\theta} = \frac{m_2^2 L^2 sin(\theta)}{m_2^2 L^2 cos(\theta) - MI}\dot{\theta}^2 - \frac{Mm_2 gLsin(\theta)}{m_2^2 L^2 cos(\theta) - MI} + \left[ \frac{rM + m_2 L}{r(m_2^2 L^2 cos(\theta) - MI)} \right] \tau
+	\end{equation}
+	
+	Putting these into state space representation:
+	
+	\begin{equation}
+		\label{eqn:nonLinSS}
+		\begin{bmatrix}
+			\dot{x} 		\\
+			\ddot{x}		\\
+			\dot{\theta}	\\
+			\ddot{\theta}
+		\end{bmatrix}
+		=		
+		\begin{bmatrix}
+			\dot{x}			\\
+			-\frac{m_2 LIsin(\theta)}{m_2^2 L^2 cos(\theta) - MI}\dot{\theta}^2 + \frac{m_2^2 L^2 g}{m_2^2 L^2 cos(\theta) - MI}cos(\theta)sin(\theta)			\\
+			\dot{\theta}	\\
+			\frac{m_2^2 L^2 sin(\theta)}{m_2^2 L^2 cos(\theta) - MI}\dot{\theta}^2 - \frac{Mm_2 gLsin(\theta)}{m_2^2 L^2 cos(\theta) - MI}
+		\end{bmatrix}
+		+
+		\begin{bmatrix}
+			0																	\\
+			-\frac{I + rm_2 Lcos(\theta)}{r(m_2^2 L^2 cos(\theta) - MI)}			\\
+			0																	\\
+			\frac{rM + m_2 L}{r(m_2^2 L^2 cos(\theta) - MI)}
+		\end{bmatrix}
+		\tau
+	\end{equation}
+	
+	\subsection{Linearization}
+	\subsection{Transfer Function}
+		
+	\section{First Section}
+	This is text
+	\subsection{Begining Things}
+	Some beginning things
+	
+\end{document}

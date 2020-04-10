@@ -40,7 +40,7 @@ D = 0
 
 #Define simulation variables
 dt = 0.01   #Timestep for the simulation
-end = 6    #End time measured in seconds
+end = 3    #End time measured in seconds
 t = np.arange(0, end, dt)  #Create a timeseries to run ODEInt against
 energy_err = np.zeros_like(t)  #Create series to store system energy error (K - U)
 
@@ -60,7 +60,7 @@ def calculateEnergy (y):
 #Callable function to return the nonlinear dynamics of the system to ODEInt.
 def pend (y, t):
     x, xDot, theta, thetaDot = y    #enter state into readable variables
-    u = 0 #controlInput(y)     #calculate input function for given state. U is a torque applied by the motor in Nm.
+    u = controlInput(y)     #calculate input function for given state. U is a torque applied by the motor in Nm.
 
     #Derivatives of the state will be called: dy/dt = [v, a, omega, alpha]
     v = xDot
@@ -86,10 +86,11 @@ def pend (y, t):
 def controlInput (y):
     x, xdot, theta, thetaDot = y
 
-    kp = 10.0
-    kd = 2.0
-
-    u = kp*theta + kd*thetaDot
+    # kp = 10.0
+    # kd = 2.0
+    #
+    # u = kp*theta + kd*thetaDot
+    u = theta
 
     return u
 
@@ -119,18 +120,29 @@ for i in [0, energy_err.size - 1]:
     energy_err[i] = initialEnergy - calculateEnergy(sol[i,:])
 
 #Plot results
-plt.plot(t,sol[:,0],'b',label='x')  #Plot each state variable with a lable and unique color
-plt.plot(t,sol[:,1],'g',label='xDot')
-plt.plot(t,sol[:,2],'r',label='theta')
-plt.plot(t,sol[:,3],'k',label='thetaDot')
+traceFig = plt.figure()
+trAx = traceFig.gca()
+trAx.plot(t,sol[:,0],'b',label='x (m)')  #Plot each state variable with a lable and unique color
+trAx.plot(t,sol[:,1],'g',label='xDot (m/s)')
+trAx.plot(t,sol[:,2],'r',label='theta (rad)')
+trAx.plot(t,sol[:,3],'k',label='thetaDot (rad/s)')
 
-plt.legend(loc="upper left")    #Display legend
+trAx.legend(loc="upper right")    #Display legend
+trAx.set_title("State Variable Traces Direct Feedback (K = 0.4)")
+trAx.set_xlabel("Time (s)")
+trAx.set(xlim=(0,end), ylim=(-1.5,2.5))
+
+traceFig.subplots_adjust(bottom=0.1)    # Make room for the x label
 
 #Animate the results to give intuitive understanding of results
-fig = plt.figure()  #Create an empty figure
-ax = fig.gca()      #Get the current axis from the new figure
+aniFig = plt.figure()  #Create an empty figure
+ax = aniFig.gca()      #Get the current axis from the new figure
 ax.axis('equal')    #Make the axes scale equally to preserve wheel shape
 ax.set(xlim=(-1.5, 1.5), ylim=(-0.1,0.25))
+ax.set_title("Direct Feedback w/ K = 0.4")
+ax.set_xlabel("X (m)")
+ax.set_ylabel("Y (m)")
+aniFig.subplots_adjust(bottom=0.15, left=0.15)
 
 time_text = ax.text(0.05, 0.1,'',horizontalalignment='left',verticalalignment='bottom', transform=ax.transAxes) #text to show time at top
 energy_err_text = ax.text(0.05, 0.1,'',horizontalalignment='left',verticalalignment='top', transform=ax.transAxes)
@@ -141,9 +153,9 @@ body, = ax.plot([],[], lw=2)
 
 ax.add_patch(wheel)
 
-anim = animation.FuncAnimation(fig, animate, init_func=anim_init,frames=(sol[:,0].size), interval=dt*1000)
+anim = animation.FuncAnimation(aniFig, animate, init_func=anim_init,frames=(sol[:,0].size), interval=dt*1000)
 
 #Save animation as gif at 30fps
-#anim.save('Solved.gif', writer='imagemagick', fps=30)
+#anim.save('DirectFeedback.gif', writer='imagemagick', fps=30)
 
 plt.show()
