@@ -40,9 +40,8 @@ print (plant)
 
 plt.figure (0)
 pzmap (plant)
-plt.title("Pole Zero Map of Theta WRT Torque")
+plt.title("Pole Zero Map of Plant")
 plt.grid(True)
-
 
 plt.figure (1)
 plt.xlim(-20,20)
@@ -59,9 +58,9 @@ for col in rlist.T:
     plt.plot(col.real, col.imag)
 
 #Pick two gains and annotate them on the plot to show the direction the poles move
-i = 10
-plt.annotate ('K = {:.2f}'.format(klist[i]), (rlist[i,1].real,rlist[i,1].imag), (8,-400), arrowprops=dict(facecolor='black', shrink=0.05, width=2))
-i = 70
-plt.annotate ('K = {:.2f}'.format(klist[i]), (rlist[i,1].real,rlist[i,1].imag), (5,500), arrowprops=dict(facecolor='black', shrink=0.05, width=2))
+i = 2
+plt.annotate ('K = {:.2f}'.format(klist[i]), (rlist[i,1].real,rlist[i,1].imag), (8,300), arrowprops=dict(facecolor='black', shrink=0.05, width=2))
+i = 20
+plt.annotate ('K = {:.2f}'.format(klist[i]), (rlist[i,1].real,rlist[i,1].imag), (-10,200), arrowprops=dict(facecolor='black', shrink=0.05, width=2))
 
 plt.show ()

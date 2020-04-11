@@ -9,7 +9,7 @@
 \usepackage[margin=1.0in]{geometry}	%Change the page margins to fit long equations
 \usepackage{amsmath}
 
-\graphicspath{{"../Dynamic Models/Images/"}}
+\graphicspath{{"../Report/Images/"}}
 
 %\renewcommand*{\vec}[1]{\mathbf{#1}} %Redefine vector command to make bold instead of overhead arrow
 
@@ -211,4 +211,45 @@
 	
 	\centerline{where $a = \frac{rM + m_2 L}{r(m_2^2 L^2 - MI)}$ and $b = -\frac{Mm_2 gL}{m_2^2 L^2 - MI}$}
 	
+	
+	\section{Controller Design}
+	\subsection{Plant analysis}
+	
+	\begin{figure}[h]
+		\includegraphics[width=4in]{{"Plant_PZMap"}}
+		\caption{Pole Zero map of the transfer function. The two poles are real and symmetric, one always in the right half plane.}
+		\label{fig:PlantPZMap}	
+	\end{figure}	
+	
+	Figure \ref{fig:PlantPZMap} shows the pole zero map of equation \ref{eqn:SISOTF}, it can be seen that one of the poles is in the right half plane and so the system is unstable. 
+	
+	\subsection{Direct Feedback Design with Root Locus}
+	
+	\begin{figure}[h]
+		\centerline{\includegraphics[width=3in]{"DFRootLocus Annotated"}}
+		\caption{Root locus plot of the plant. Larger gains only yield marginal stability.}
+		\label{fig:DirectFeedRL}
+	\end{figure}
+	
+	As a first attempt to stabilize the WIP a simple gain controller was implemented in the simulation. As shown in figure \ref{fig:DirectFeedRL} the system is unstable for low gains and only achieves marginal stability with larger gains. This is not acceptable as a solution but does make for an interesting animation which can be seen in the readme for this project.
+		
+	\subsection{PD Design}
+	While continuous time PD controllers are not realizeable, the fact that my simulation provides access to the entire state of the system and so it can be simulated by simply using the angular velocity. The usual form of a PD controller is:
+	
+	\begin{equation}
+		\label{PDController}
+		C(s) = k_d s + k_p
+	\end{equation}
+	
+	This equation has two parameters to vary and so makes traditional design techniques such as root locus design more difficult. By factoring out $k_d$ this becomes slightly easier:
+	
+	\begin{equation}
+		\label{PDModified}
+		C(s) = k_d (s + \frac{k_p}{k_d})
+	\end{equation}
+	
+	The PD controller effectively adds a zero to the function and in this form the ratio $\frac{k_p}{k_d}$ decides that zero's location. Since both system poles and the zero are on the real axis, the zero can either be between the open loop poles $\frac{k_p}{k_d} < b$ or to the left of them $\frac{k_p}{k_d} > b$. To get reasonably quick dynamics the latter case should be selected.
+
+
+
 \end{document}

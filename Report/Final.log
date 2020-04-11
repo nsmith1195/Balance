@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2020.4.8)  10 APR 2020 00:44
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2020.4.8)  10 APR 2020 23:11
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -281,53 +281,76 @@ Package caption Info: End \AtBeginDocument code.
 \openout3 = `Final.toc'.
 
  [2]
-<"../Dynamic Models/Images/""System Setup".png, id=14, 539.616pt x 238.9728pt>
-File: "../Dynamic Models/Images/""System Setup".png Graphic file (type png)
+<"../Report/Images/""System Setup".png, id=14, 539.616pt x 238.9728pt>
+File: "../Report/Images/""System Setup".png Graphic file (type png)
 
-<use "../Dynamic Models/Images/""System Setup".png>
-Package pdftex.def Info: "../Dynamic Models/Images/""System Setup".png used on 
-input line 30.
+<use "../Report/Images/""System Setup".png>
+Package pdftex.def Info: "../Report/Images/""System Setup".png used on input li
+ne 30.
 (pdftex.def)             Requested size: 469.75502pt x 208.03955pt.
 
-<"../Dynamic Models/Images/""Coordinate Reference".png, id=16, 239.9364pt x 200
-.1879pt>
-File: "../Dynamic Models/Images/""Coordinate Reference".png Graphic file (type 
-png)
- <use "../Dynamic Models/Images/""Coordinate Reference".png>
-Package pdftex.def Info: "../Dynamic Models/Images/""Coordinate Reference".png 
-used on input line 58.
+<"../Report/Images/""Coordinate Reference".png, id=16, 239.9364pt x 200.1879pt>
+File: "../Report/Images/""Coordinate Reference".png Graphic file (type png)
+<use "../Report/Images/""Coordinate Reference".png>
+Package pdftex.def Info: "../Report/Images/""Coordinate Reference".png used on 
+input line 58.
 (pdftex.def)             Requested size: 144.54pt x 120.59933pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[1 <../Dynamic Models/Images/System Setup.png>] [2 <../Dynamic Models/Images/Co
-ordinate Reference.png>] [3] [4] (./Final.aux) ) 
+[1 <../Report/Images/System Setup.png>] [2 <../Report/Images/Coordinate Referen
+ce.png>] [3]
+<"../Report/Images/""Plant_PZMap".png, id=36, 578.16pt x 433.62pt>
+File: "../Report/Images/""Plant_PZMap".png Graphic file (type png)
+
+<use "../Report/Images/""Plant_PZMap".png>
+Package pdftex.def Info: "../Report/Images/""Plant_PZMap".png used on input lin
+e 219.
+(pdftex.def)             Requested size: 289.07999pt x 216.80946pt.
+
+<"../Report/Images/""DFRootLocus Annotated".png, id=37, 578.16pt x 433.62pt>
+File: "../Report/Images/""DFRootLocus Annotated".png Graphic file (type png)
+
+<use "../Report/Images/""DFRootLocus Annotated".png>
+Package pdftex.def Info: "../Report/Images/""DFRootLocus Annotated".png used on
+ input line 229.
+(pdftex.def)             Requested size: 216.81pt x 162.6071pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[4 <../Report/Images/Plant_PZMap.png>] [5 <../Report/Images/DFRootLocus Annotat
+ed.png>] (./Final.aux)
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+ ) 
 Here is how much of TeX's memory you used:
- 3728 strings out of 494910
- 56077 string characters out of 6179837
- 128387 words of memory out of 5000000
- 6983 multiletter control sequences out of 15000+600000
+ 3742 strings out of 494910
+ 56471 string characters out of 6179837
+ 128413 words of memory out of 5000000
+ 6995 multiletter control sequences out of 15000+600000
  9023 words of font info for 33 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
  42i,9n,42p,468b,337s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/
-public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.p
-fb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/
-texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-
-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/share/texlive/texmf-dist/fo
-nts/type1/public/amsfonts/cm/cmsy7.pfb>
-Output written on Final.pdf (6 pages, 275443 bytes).
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/
+public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
+7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/s
+hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
+Output written on Final.pdf (7 pages, 333219 bytes).
 PDF statistics:
- 80 PDF objects out of 1000 (max. 8388607)
- 54 compressed objects within 1 object stream
+ 93 PDF objects out of 1000 (max. 8388607)
+ 61 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 11 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

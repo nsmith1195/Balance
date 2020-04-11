@@ -46,7 +46,7 @@ energy_err = np.zeros_like(t)  #Create series to store system energy error (K - 
 
 u1 = np.empty(0) #Empty array to record torque values (units of Nm)
 
-y0 = [0.0, 0.0, 0.2, 0.0]   #initial conditions for the simulation
+y0 = [0.0, -0.1, 0.2, 0.0]   #initial conditions for the simulation
 
 # Return the energy in the system at this state. Used to verify energy is conserved
 # in this model.
@@ -86,11 +86,15 @@ def pend (y, t):
 def controlInput (y):
     x, xdot, theta, thetaDot = y
 
-    # kp = 10.0
-    # kd = 2.0
-    #
-    # u = kp*theta + kd*thetaDot
-    u = theta
+    #PD
+    kp = 1.2
+    kd = 0.1
+
+    u = kp*theta + kd*thetaDot
+
+    #Direct Feedback
+    # K = 1
+    # u = K*theta
 
     return u
 
