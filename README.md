@@ -1,6 +1,8 @@
 # Balance
-<img src="./Dynamic Models/Images/Unforced Dynamics.gif" width="300" />
-<img src="./Controller Design/SISO/Direct Feedback/DirectFeedback(k = 0,4).gif" width="300" />
+<p align="center">
+  <img src="./Dynamic Models/Images/Unforced Dynamics.gif" width="300" />
+  <img src="./Controller Design/SISO/Direct Feedback/DirectFeedback(k = 0,4).gif" width="300" />
+</p>
 
 Balancing Robot Repository
 
