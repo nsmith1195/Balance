@@ -216,7 +216,7 @@
 	\subsection{Plant analysis}
 	
 	\begin{figure}[h]
-		\includegraphics[width=4in]{{"Plant_PZMap"}}
+		\centerline{\includegraphics[width=3in]{{"Plant_PZMap"}}}
 		\caption{Pole Zero map of the transfer function. The two poles are real and symmetric, one always in the right half plane.}
 		\label{fig:PlantPZMap}	
 	\end{figure}	
@@ -234,22 +234,54 @@
 	As a first attempt to stabilize the WIP a simple gain controller was implemented in the simulation. As shown in figure \ref{fig:DirectFeedRL} the system is unstable for low gains and only achieves marginal stability with larger gains. This is not acceptable as a solution but does make for an interesting animation which can be seen in the readme for this project.
 		
 	\subsection{PD Design}
-	While continuous time PD controllers are not realizeable, the fact that my simulation provides access to the entire state of the system and so it can be simulated by simply using the angular velocity. The usual form of a PD controller is:
+	While continuous time PD controllers are not realizeable, the fact that my simulation provides access to the entire state of the system I am able to sidestep this limitation though when it is implemented on hardware the controller will need to be discretized. The usual form of a PD controller is:
 	
 	\begin{equation}
 		\label{PDController}
 		C(s) = k_d s + k_p
 	\end{equation}
 	
-	This equation has two parameters to vary and so makes traditional design techniques such as root locus design more difficult. By factoring out $k_d$ this becomes slightly easier:
+	This equation has two parameters to vary and so makes traditional design techniques such as root locus design difficult. By factoring out $k_d$ this becomes slightly easier since the pole can be placed by hand at the point $-\frac{k_p}{k_d}$ and $k_d$ can be used as the root locus gain. Doing this gives the modified PD transfer function:
 	
 	\begin{equation}
 		\label{PDModified}
 		C(s) = k_d (s + \frac{k_p}{k_d})
 	\end{equation}
 	
-	The PD controller effectively adds a zero to the function and in this form the ratio $\frac{k_p}{k_d}$ decides that zero's location. Since both system poles and the zero are on the real axis, the zero can either be between the open loop poles $\frac{k_p}{k_d} < b$ or to the left of them $\frac{k_p}{k_d} > b$. To get reasonably quick dynamics the latter case should be selected.
+	The PD controller effectively adds a zero to the function and in this form the ratio $\frac{k_p}{k_d}$ decides that zero's location. Since both system poles and the zero are on the real axis, the zero can either be between the open loop poles $\frac{k_p}{k_d} < b$ or to the left of them $\frac{k_p}{k_d} > b$. To get reasonably quick dynamics the latter case should be selected. 
+	
+	\begin{figure}[h]
+		\centerline{\includegraphics[width=\linewidth]{"PDRL_Combined"}}
+		\caption{Root Locus plot of the plant with a PD controller. K value in image is $k_d$ and the location of the zero is $-\frac{k_p}{k_d}$}
+		\label{fig:PDRootLocus}
+	\end{figure}
+	
+	The right plot of figure \ref{fig:PDRootLocus} shows the more desirable case. As can be seen in that plot from the annotated gains, even a gain as small as 0.12 will move the dominant pole very close to the zero. The non-dominant pole is far in the negative direction and was excluded from the figure in the interest of maintaining a reasonable scale and readability.
 
+\section{Mechanical Design}
+	\subsection{Part Sourcing}
+	Due to the very limited budget for this project most parts were scavenged from old printers and toys. Most structural parts came from a toy erectors set which allowed for some degree of uniformity in the design due to those components having regularly spaced holes. The motor mounts were made by cutting the entire motor assembly along with the encoders out of an old printer and mounting them in the best possible way to the sides of the body. This approach led to many issues of alignment with regards to the Inertial Measurement Unit (IMU) which required extra effort to calibrate. 	
+	
+		
+	\subsection{Custom Parts}
+	Since the gears attached to the wheels were not designed to mount the wheels I had on hand, I had to design a custom adaptor to allow the wheels to mount. 
 
+\section{Electrical Design}
+	\subsection{Component Selection}
+	To control the robot an Arduino microcontroller was used as it was available at the start of the project. While the Arduino isn't the fastest controller available it should be more than fast enough for this project.
+	Both motors will be driven by a single L298-n motor driver circuit. This chip also has a 5 volt regulated output and will be used to provide power to the Arduino and IMU. 
+	In order to measure the orientation of the robot an MPU-6050 Inertial Measurement Unit was used.
+	
+	
+	\subsection{Motor Parameter Evaluation}
+	
+	
+	
+
+\section{Software Design}
+	\subsection{Component Testing Software}
+	
+	\subsection{Controller Software}
+	
 
 \end{document}
