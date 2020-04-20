@@ -27,7 +27,7 @@
 	\subsection{Derivation}
 	
 	\begin{figure}[h]
-		\includegraphics[width=\linewidth]{{"System Setup"}}
+		\includegraphics[width=\linewidth]{{"/Graphics/System Setup"}}
 		\caption{Overview and Definitions}	
 		\label{fig:System Definitions}	
 	\end{figure}
@@ -55,7 +55,7 @@
 	
 	\begin{figure}[h]
 		\centering
-		\includegraphics[width=2in]{{"Coordinate Reference"}}
+		\includegraphics[width=2in]{{"/Graphics/Coordinate Reference"}}
 		\caption{Definitions of $\dot{\vec{x}}_1$ and $\dot{\vec{x}}_2$}	
 		\label{fig:VectorDefinitions}	
 	\end{figure}
@@ -216,7 +216,7 @@
 	\subsection{Plant analysis}
 	
 	\begin{figure}[h]
-		\centerline{\includegraphics[width=3in]{{"Plant_PZMap"}}}
+		\centerline{\includegraphics[width=3in]{{"/SISO_Controllers/Plant_PZMap"}}}
 		\caption{Pole Zero map of the transfer function. The two poles are real and symmetric, one always in the right half plane.}
 		\label{fig:PlantPZMap}	
 	\end{figure}	
@@ -226,7 +226,7 @@
 	\subsection{Direct Feedback Design with Root Locus}
 	
 	\begin{figure}[h]
-		\centerline{\includegraphics[width=3in]{"DFRootLocus Annotated"}}
+		\centerline{\includegraphics[width=3in]{"/SISO_Controllers/DFRootLocus Annotated"}}
 		\caption{Root locus plot of the plant. Larger gains only yield marginal stability.}
 		\label{fig:DirectFeedRL}
 	\end{figure}
@@ -251,7 +251,7 @@
 	The PD controller effectively adds a zero to the function and in this form the ratio $\frac{k_p}{k_d}$ decides that zero's location. Since both system poles and the zero are on the real axis, the zero can either be between the open loop poles $\frac{k_p}{k_d} < b$ or to the left of them $\frac{k_p}{k_d} > b$. To get reasonably quick dynamics the latter case should be selected. 
 	
 	\begin{figure}[h]
-		\centerline{\includegraphics[width=\linewidth]{"PDRL_Combined"}}
+		\centerline{\includegraphics[width=\linewidth]{"/SISO_Controllers/PDRL_Combined"}}
 		\caption{Root Locus plot of the plant with a PD controller. K value in image is $k_d$ and the location of the zero is $-\frac{k_p}{k_d}$}
 		\label{fig:PDRootLocus}
 	\end{figure}
@@ -274,8 +274,19 @@
 	
 	
 	\subsection{Motor Parameter Evaluation}
+	\begin{figure}[h]
+		\centerline{\includegraphics[width=3in]{"/Graphics/Motor-Encoder-Test-Arrangement"}}
+		\caption{Overview of setup. $\omega_s$ can be measured directly and related to $\omega_m$ through geometry. The back emf, $e_a$, can be measured directly as well.}
+		\label{fig:DirectFeedRL}
+	\end{figure}
 	
+	The following model was used to represent the motors\cite{Ogata}
 	
+	\begin{equation}
+		\frac{\tau (s)}{E_a (s)} = \frac{K_m}{s(T_m s + 1)}
+	\end{equation}		
+	
+	\centerline{Where: $K_m = \frac{K}{Rb + K^2}$ and $T_m = \frac{RJ_{mot}}{Rb + K^2}$}
 	
 
 \section{Software Design}
@@ -283,5 +294,14 @@
 	
 	\subsection{Controller Software}
 	
+\begin{thebibliography}{9}	%Number 9 doesn't mean anything. The number of digits determines how many refs can be made in bibliography. i.e. 1,6, or 8 would allow up to 9 refs while 13 would allow 99, etc.
+
+	\bibitem{Ogata}
+		Katsuhiko Ogata,
+		\textit{System Dynamics},
+		4th edition,
+		2004.
+
+\end{thebibliography}
 
 \end{document}

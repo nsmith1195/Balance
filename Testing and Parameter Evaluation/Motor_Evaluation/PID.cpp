@@ -1,6 +1,14 @@
 #include <stdint.h>
 #include <Arduino.h>
 
+/**The PID class manages all functions related to the control loop and implements a 
+ * standard PID controller. The measured value is not sppecific to anything and so 
+ * an instance of this class can in theory handle any relevant variable (position,
+ * speed, current, etc). The controller operates in discrete time and makes the 
+ * assumption that the time step set in the constructor will be respected by the main
+ * program, necessitating the use of interrupt service routines.
+ */
+
 class PID
 {
   private:
@@ -12,7 +20,6 @@ class PID
   int32_t accErr;
   float diff;       //float because it is read from encoder
   
-  int32_t lastCount;  //previous position for speed calculations
   int32_t reference;  //reference position specified in counts
 
   int32_t lastU;
@@ -38,16 +45,16 @@ class PID
    * program. A timer interrupt is to be used to ensure it is. The controller assumes continuous
    * time so dt must be small to prevent errors.
     */
-  int32_t generateInput (int32_t count)
+  int32_t generateInput (int32_t currentVal)
   {
     float a = (float)(kp + ki*t/2.0 + kd/t);
     float b = (float)(-kp + ki*t/2.0 - 2*kd/t);
     float c = (float)kd/t;
 
-    lastU = (int32_t)(lastU + a*(reference - count) + b*err[1] + c*err[2]);   //Discrete time pid loop
+    lastU = (int32_t)(lastU + a*(reference - currentVal) + b*err[1] + c*err[2]);   //Discrete time pid loop
 
     err[1] = err[0];
-    err[0] = reference - count;
+    err[0] = reference - currentVal;
 
     return lastU;
   }

@@ -2,15 +2,17 @@
 #include "QuadEncoder.cpp"
 #include "L298.cpp"
 
-                            //GLOBAL VARIABLE DEFINITION
+const int NUMREADINGS = 10; //number of readings of speed and voltage
+
 boolean running = false;    //wait for user input to make sure power supply is ready
 volatile boolean changed = false;
+boolean readingVoltage = false; //true if taking voltage and speed readings.
 
 unsigned long lastControllerTime;
 
 int currentPower = 0;  //TEST VARIABLE DELETE WHEN DONE
 
-PID pid (1.5,1,0,0.01);  //define pid object
+PID pid (0.1,0,0,0.01);  //define pid object
 QuadEncoder enc1 (2,3);   //initialize encoder 1 object
 L298 Driver (6,5);       //setup motor driver object
 
@@ -45,18 +47,18 @@ void setup() {
   Serial.begin(9600); //Start serial communication
   Serial.println("Initialized");
 
-  pid.setReference (200); //Change the reference value
+  pid.setReference (-200); //Change the reference value
 }
 
 void loop() {
   if (running)
   {
-//    if (millis() - lastControllerTime > 10)
-//    {
-//      Driver.commandMotor1(pid.generateInput(enc1.getPosition())); //update motor command
-//      lastControllerTime = millis();
-//    }
-    Serial.println(enc1.getPosition());
+    if (millis() - lastControllerTime > 10)  //if it's been longer than ten milliseconds update pid loop
+    {
+      lastControllerTime = millis(); //update previous run time
+
+      Driver.commandMotor1(pid.generateInput (enc1.getVelocity())); //update pid loop 
+    }
   }
 
   if (Serial.available() > 0)
@@ -88,21 +90,15 @@ void handleSerialInput ()
       pid.printLastU ();
       break;
     case 'a':
-      Driver.commandMotor1 (-255);
-      break;
-    case 's':
-      Driver.commandMotor1 (255);
-      break;
-    case 'x':
-      enc1.displayState ();
-      break;
-    case 't':                   //TEST CODE
       currentPower += 25;
       Driver.commandMotor1 (currentPower);
       break;
-    case 'y':
+    case 's':
       currentPower -= 25;
       Driver.commandMotor1 (currentPower);
+      break;
+    case 'x':
+      enc1.displayState ();
       break;
     case 'g':
       running = true;
@@ -128,6 +124,14 @@ float updateAverageVelocity (float vCurrent)
   velocity[0] = vCurrent;
 
   return average;
+}
+
+float readVoltage ()
+{
+  int reading = analogRead (A0);
+  float voltage = (reading +0.5)* (5.0/1024.0);
+
+  return voltage;
 }
 
 ISR (TIMER1_COMPA_vect)

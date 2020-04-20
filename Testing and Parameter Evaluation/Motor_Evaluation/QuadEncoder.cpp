@@ -41,9 +41,16 @@ class QuadEncoder
     }
   }
 
+  //return position measured in counts
   int32_t getPosition ()
   {
     return positionCounts[0];
+  }
+
+  //return position in radians
+  float getPositionRad ()
+  {
+    return positionCounts[0] * 2*PI/COUNTS;
   }
 
   float getVelocity ()
@@ -65,9 +72,18 @@ class QuadEncoder
   }
 
   void updateVelocity ()
-  {    
+  { 
+    static unsigned long lastRun;
+    unsigned long dt = millis() - lastRun;
+    
+    Serial.print ("dt: ");
+    Serial.print (dt);
+    Serial.println (" ms");
+
+    lastRun += dt;
+    
     //dt is constant (0.1s)
-    velocity = (float)((positionCounts[0] - positionCounts[1])/(0.1)); //dt is constant since the motor is moving slow
+    velocity = ((float)(positionCounts[0] - positionCounts[1])/(0.1)); //dt is constant since the motor is moving slow
 
     positionCounts [1] = positionCounts[0]; //update the value of the previous position
   }
