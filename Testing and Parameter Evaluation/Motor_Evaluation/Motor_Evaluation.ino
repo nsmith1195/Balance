@@ -53,12 +53,15 @@ void setup() {
 void loop() {
   if (running)
   {
-    if (millis() - lastControllerTime > 10)  //if it's been longer than ten milliseconds update pid loop
-    {
-      lastControllerTime = millis(); //update previous run time
+//    if (millis() - lastControllerTime > 10)  //if it's been longer than ten milliseconds update pid loop
+//    {
+//      lastControllerTime = millis(); //update previous run time
+//
+//      Driver.commandMotor1(pid.generateInput (enc1.getVelocity())); //update pid loop 
+//    }
 
-      Driver.commandMotor1(pid.generateInput (enc1.getVelocity())); //update pid loop 
-    }
+    Serial.print ("Velocity: ");
+    Serial.println (enc1.getVelocity());
   }
 
   if (Serial.available() > 0)
@@ -112,29 +115,7 @@ void enc1Read ()
   changed = true;
 }
 
-//Function to return the 4 point moving average of velocity for the most accurate estimate since measurements fluctuate
-float updateAverageVelocity (float vCurrent)
-{
-  static float velocity [3] = {0, 0, 0};  //4th point is vCurrent
-
-  float average = (vCurrent + velocity[0] + velocity[1] + velocity[2])/4.0;
-
-  velocity[2] = velocity[1];  //Move each stored velocity back a time step
-  velocity[1] = velocity[0];
-  velocity[0] = vCurrent;
-
-  return average;
-}
-
-float readVoltage ()
-{
-  int reading = analogRead (A0);
-  float voltage = (reading +0.5)* (5.0/1024.0);
-
-  return voltage;
-}
-
 ISR (TIMER1_COMPA_vect)
 {
-  enc1.updateVelocity ();
+  //enc1.estimateVelocity ();
 }

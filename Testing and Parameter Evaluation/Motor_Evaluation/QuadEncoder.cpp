@@ -64,27 +64,25 @@ class QuadEncoder
     if (digitalRead(channelBPin))
     {
       positionCounts[0]++;
+      estimateVelocity((int32_t)1);
     }
     else
     {
       positionCounts[0]--;
+      estimateVelocity((int32_t)-1);
     }
   }
 
-  void updateVelocity ()
-  { 
-    static unsigned long lastRun;
-    unsigned long dt = millis() - lastRun;
-    
-    Serial.print ("dt: ");
-    Serial.print (dt);
-    Serial.println (" ms");
+  /**Function implementing the velocity estimator for each motor. This is currently done by measuring the 
+   * time between each encoder pulse. This assumes a constant motor speed which is non-zero.
+   */
+  void estimateVelocity (int32_t dir)
+  {     
+    static unsigned long lastRun; //time in microseconds of the last time the function ran
+    unsigned long dt = micros() - lastRun;   //time since last run in microseconds
 
-    lastRun += dt;
-    
-    //dt is constant (0.1s)
-    velocity = ((float)(positionCounts[0] - positionCounts[1])/(0.1)); //dt is constant since the motor is moving slow
+    lastRun += dt;  //update last run
 
-    positionCounts [1] = positionCounts[0]; //update the value of the previous position
+    velocity = (float)(dir*1000000.0/dt); //velocity = dx/dt converted to counts/second
   }
 };
