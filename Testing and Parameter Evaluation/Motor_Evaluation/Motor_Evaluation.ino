@@ -12,19 +12,13 @@ unsigned long lastControllerTime;
 
 int currentPower = 0;  //TEST VARIABLE DELETE WHEN DONE
 
-PID pid (0.1,0,0,0.01);  //define pid object
+PID pid (4,0.5,1,0.01);  //define pid object                          PID LOOP STILL DOESN'T WORK
 QuadEncoder enc1 (2,3);   //initialize encoder 1 object
 L298 Driver (6,5);       //setup motor driver object
 
 void setup() {  
   lastControllerTime = 0;
-  
-  pinMode(2, INPUT);  //Pin 2 is the interrupt pin
-  pinMode(3, INPUT);
-  pinMode(13, OUTPUT);
-  
-  digitalWrite(13, HIGH); //Turn on the encoder. Will remain on for entirety of sketch
-
+ 
   //Setup timer interrupt to update velocity
   noInterrupts ();  //turn off interrupts
 
@@ -41,27 +35,22 @@ void setup() {
 
   interrupts ();  //make sure interrupts are turned back on
 
-  //Trigger interrupt to read encoder on rising edge of channel A. Checking only A halves resolution
-  attachInterrupt(INT0, enc1Read, RISING);   //Hacky solution to avoid problem of calling instance method from interrupt.
-
   Serial.begin(9600); //Start serial communication
   Serial.println("Initialized");
 
-  pid.setReference (-200); //Change the reference value
+  pid.setReference (10); //Change the reference value
 }
 
 void loop() {
   if (running)
   {
-//    if (millis() - lastControllerTime > 10)  //if it's been longer than ten milliseconds update pid loop
-//    {
-//      lastControllerTime = millis(); //update previous run time
-//
-//      Driver.commandMotor1(pid.generateInput (enc1.getVelocity())); //update pid loop 
-//    }
+    
+  }
 
-    Serial.print ("Velocity: ");
-    Serial.println (enc1.getVelocity());
+  if (changed)
+  {
+    Serial.println (enc1.getPosition ());
+    changed = false;
   }
 
   if (Serial.available() > 0)
@@ -109,7 +98,7 @@ void handleSerialInput ()
   }
 }
 
-void enc1Read ()
+ISR (PCINT2_vect)
 {
   enc1.readEncoder ();
   changed = true;
@@ -117,5 +106,9 @@ void enc1Read ()
 
 ISR (TIMER1_COMPA_vect)
 {
-  //enc1.estimateVelocity ();
+  enc1.estimateVelocity ();
+  if (running)
+  {
+    Driver.commandMotor1(pid.generateInput(enc1.getPosition()));
+  }
 }
