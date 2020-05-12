@@ -12,7 +12,7 @@ unsigned long lastControllerTime;
 
 int currentPower = 0;  //TEST VARIABLE DELETE WHEN DONE
 
-PID pid (4,0.5,1,0.01);  //define pid object                          PID LOOP STILL DOESN'T WORK
+PID pid (2,0.0,0.1,0.1);  //define pid object                          PID LOOP STILL DOESN'T WORK
 QuadEncoder enc1 (2,3);   //initialize encoder 1 object
 L298 Driver (6,5);       //setup motor driver object
 
@@ -38,13 +38,13 @@ void setup() {
   Serial.begin(9600); //Start serial communication
   Serial.println("Initialized");
 
-  pid.setReference (10); //Change the reference value
+  pid.setReference (50); //Change the reference value
 }
 
 void loop() {
   if (running)
   {
-    
+
   }
 
   if (changed)
@@ -72,21 +72,18 @@ void handleSerialInput ()
     case 'e':
       pid.printErr ();
       break;
-    case 'i':
-      pid.printAccErr ();
-      break;
     case 'r':
       pid.printReference ();
       break;
-    case 'u':
-      pid.printLastU ();
+    case 'w':
+      pid.setReference(pid.getReference() + 50);
       break;
     case 'a':
-      currentPower += 25;
+      currentPower += 5;
       Driver.commandMotor1 (currentPower);
       break;
     case 's':
-      currentPower -= 25;
+      currentPower -= 5;
       Driver.commandMotor1 (currentPower);
       break;
     case 'x':

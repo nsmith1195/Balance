@@ -6,16 +6,21 @@
 
 Balancing Robot Repository
 
-Robot acts as an inverted pendulum with the goal of remaining stable while being mobile in at least one direction. Turning may be added as a later feature as wheels are independently actuated. A full report on this project can be found in Final.pdf
+Robot acts as an inverted pendulum with the goal of remaining stable while being mobile in at least one direction. Turning may be added as a later feature as wheels are independently actuated. A full report on this project can be found in Final.pdf which includes relevant derivations and explanations for design choices. Below is a short summary of each major section.
 
-## Hardware
-Almost all hardware used in this project is secondhand. The structural components come from an erectors set while the motors and encoders both come from an old printer. The benefit of using the motors and encoders from the printer is that they are already mounted to a backplate which can be cut to the proper size and shape to attach to the robot's body. A breadboard is also attached to the body to mount the IMU and provide a location to make all necessary connections.
-
-## Connections
-Power is provided to the system by a 9V battery connected to the L298N. The internal regulator on this chip provides 5V which is then used to power the power rail of a breadboard mounted to the robot. The power rail then powers the Arduino Uno and MPU 6050. Communication with the MPU 6050 is done via an I2C interface using the Wire library over wires connected to the A4 and A5 pins. The AD0 pin on the MPU 6050 is grounded on the Arduino setting its I2C address to 0x68. A 6 wire ribbon cable connects the Arduino to the L298N to allow for a digital input to power both motors forward and backwards while also providing a PWM input for speed control of each motor. The PWM inputs are connected to digital pins 5 and 6 while the remaining four wires are connected to digital pins 2 - 7.
-
-## State Estimation
-To measure each of the robot's degrees of freedom there are several sensors onboard. An inertial measurement unit uses measurements from a gyroscope and accelerometer to estimate the angle theta in the plane of motion. To combine these measures and reduce noise a complementary filter is used. An encoder is also used on each of the two wheels to measure the distance the robot has traveled. The angular position is incremented every time an interrupt is triggered by the rising edge of an encoder pulse. This has the consequence of halving the number of detectable encoder states but in this application it should be acceptable. Velocity estimation is done at a constant frequency by dividing the number of encoder counts measured over the time period. This was done instead of dividing each encoder step by the time between each step to avoid problems around 0 velocity where the estimator never finds out it stopped. This will likely be changed in the future to a more sophisticated algorithm due to issues with integration errors in this implementation.
 
 ## Dynamic Model
-The full equations of motion were derived for a Wheeled Inverted Pendulum (WIP) and were used to simulate the system with Scipy. This model was then linearized and used to generate several control laws
+The full equations of motion were derived for a Wheeled Inverted Pendulum (WIP) and were used to simulate the system with Scipy. It is assumed that the robot can only move in a straight line which greatly simplifies the calculations. This model was then linearized and used to generate several control laws. 
+
+## Controller Design
+To simplify the initial design the linearized model was further reduced to a single input single output transfer function relating the angle of the robot to the torque input. This allows the use of very simple frequency domain design tools such as the root locus, as well as the use of common control architectures like PD and direct feedback.
+
+
+## Mechanical Design
+The body of the robot is mostly composed of secondhand parts from various electronics. Several small parts such as wheel connectors were 3D modeled and printed.
+
+## Electrical Design
+The controller for the robot is an Arduino Uno which draws power from the 5 volt regulator on an L298 motor driver. This driver provides power for both motors. To allow for direct control of the torque to each motor, current sensing resistors are placed in series with each motor. To read each voltage a difference amplifier is used to amplify the small voltage drop and allow reading by the Arduinio ADC. Finally, to measure the state of the robot an MPU-6050 inertial measurement unit and quadrature encoders allow direct measurement of the angle and distance travelled. To manage many of these components a breadboard is mounted opposite from the Arduino where each component can easily attach.
+
+## Software Design
+

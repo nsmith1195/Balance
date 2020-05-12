@@ -47,6 +47,16 @@ class L298
     //which is currently an arbitrary number -255 - 255
     void commandMotor1 (float u)
     {
+      //cap u between the saturation limits of analogwrite
+      if (u > 255)
+      {
+        u = 255;
+      }
+      if (u < -255)
+      {
+        u = -255;
+      }
+            
       //If u is positive write to input 1 to go forward. Otherwise input 2
       if (u > 0)
       {
@@ -62,7 +72,17 @@ class L298
     //Function to alter pwm signal to motor 2. Takes control signal u 
     //which is currently an arbitrary number -255 - 255
     void commandMotor2 (float u)
-    {
+    {      
+      //cap u between the saturation limits of analogwrite
+      if (u > 255)
+      {
+        u = 255;
+      }
+      if (u < -255)
+      {
+        u = -255;
+      }
+      
       //If u is positive write to input 3 to go forward. Otherwise input 4
       if (u >= 0)
       {

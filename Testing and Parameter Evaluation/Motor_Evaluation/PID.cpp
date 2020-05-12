@@ -16,13 +16,20 @@ class PID
   float ki;
   float kd;
 
-  int32_t err [2];     //Tracked errors. Only errors k-1 and k-2 are stored since the current error can be calculated each loop
-  int32_t accErr;
-  float diff;       //float because it is read from encoder
-  
+  float N = 5;  //Low pass derivative filter gain
+
+  float b2; //calculated gains for discrete time pid controller
+  float b1;
+  float b0;
+  float a2;
+  float a1;
+  float a0;
+
+  int32_t err [3];     //Tracked errors. Only errors k-1 and k-2 are stored since the current error can be calculated each loop
+
   int32_t reference;  //reference position specified in counts
 
-  int32_t lastU;
+  float u [3];  //holds current and previous two control inputs
 
   float t; //time step for the controller (seconds)
 
@@ -35,39 +42,52 @@ class PID
 
     err [0] = reference;  //initial errors are the entire distance from reference to 0
     err [1] = reference;
+    err [2] = reference;
+
+    u[0] = 0; //initial input is 0
+    u[1] = 0;
+    u[2] = 0;
 
     reference = 0;
 
     t = dt;
+
+    float a = kp + N*kd;
+    float b = N*kp + ki;
+    float c = N*ki;
+
+    b2 = a - b + c;
+    b1 = 2*(c - a);
+    b0 = a + b + c;
+    a2 = 1 - N;
+    a1 = -2;
+    a0 = 1 + N;
   }
 
   /**main function to generate input signal. Assumes the time step dt is respected by the main
    * program. A timer interrupt is to be used to ensure it is. The controller assumes continuous
    * time so dt must be small to prevent errors.
     */
-  int32_t generateInput (int32_t currentVal)
+  float generateInput (int32_t currentVal)        //VERIFY NEW ALGORITHM  
   {
-    float a = (float)(kp + ki*t/2.0 + kd/t);
-    float b = (float)(-kp + ki*t/2.0 - 2*kd/t);
-    float c = (float)kd/t;
-
-    lastU = (int32_t)(lastU + a*(reference - currentVal) + b*err[0] + c*err[1]);   //Discrete time pid loop
-
+    err[2] = err[1];  //update errors
     err[1] = err[0];
     err[0] = reference - currentVal;
+    
+    u[2] = u[1];  //update control input history
+    u[1] = u[0];
+    u[0] = 0.11*(-a1*u[1]/a0 - a2*u[2]/a0 + b0*err[0]/a0 + b1*err[1]/a0 + b2*err[2]/a0); //scale to account for motor constant
 
-    return lastU;
-  }
+    if (u[0] > 255)   //anti windup check
+    {
+      u[0] = 255;
+    }
+    if (u[0] < -255)
+    {
+      u[0] = -255;
+    }
 
-  void getSpeed ()
-  {
-    return diff;
-  }
-
-  void printAccErr ()
-  {
-    Serial.print ("accErr: ");
-    Serial.println(accErr);
+    return u[0] + 32*abs(err[0])/err[0]; //add to account for coulomb friction
   }
 
   void printErr ()
@@ -76,16 +96,15 @@ class PID
     Serial.println (err[0]);
   }
 
-  void printLastU ()
-  {
-    Serial.print ("U: ");
-    Serial.println (lastU);
-  }
-
   void printReference ()
   {
     Serial.print ("Reference: ");
     Serial.println(reference);
+  }
+
+  int32_t getReference ()
+  {
+    return reference;
   }
 
   void setReference (int32_t ref)
