@@ -237,14 +237,14 @@
 	While continuous time PD controllers are not realizeable, the fact that my simulation provides access to the entire state of the system I am able to sidestep this limitation though when it is implemented on hardware the controller will need to be discretized. The usual form of a PD controller is:
 	
 	\begin{equation}
-		\label{PDController}
+		\label{eqn:PDController}
 		C(s) = k_d s + k_p
 	\end{equation}
 	
 	This equation has two parameters to vary and so makes traditional design techniques such as root locus design difficult. By factoring out $k_d$ this becomes slightly easier since the pole can be placed by hand at the point $-\frac{k_p}{k_d}$ and $k_d$ can be used as the root locus gain. Doing this gives the modified PD transfer function:
 	
 	\begin{equation}
-		\label{PDModified}
+		\label{eqn:PDModified}
 		C(s) = k_d (s + \frac{k_p}{k_d})
 	\end{equation}
 	
@@ -259,12 +259,151 @@
 	The right plot of figure \ref{fig:PDRootLocus} shows the more desirable case. As can be seen in that plot from the annotated gains, even a gain as small as 0.12 will move the dominant pole very close to the zero. The non-dominant pole is far in the negative direction and was excluded from the figure in the interest of maintaining a reasonable scale and readability.
 
 \section{Mechanical Design}
+
+	\begin{figure}[h]
+		\centerline{\includegraphics[]{"/Graphics/Robot_Body"}}
+		\caption{Expected setup of robot body. Some areas such as the method of attaching the wheels are still undetermined.}		
+		\label{fig:RobotBodyGraphic}
+	\end{figure}
+
 	\subsection{Part Sourcing}
 	Due to the very limited budget for this project most parts were scavenged from old printers and toys. Most structural parts came from a toy erectors set which allowed for some degree of uniformity in the design due to those components having regularly spaced holes. The motor mounts were made by cutting the entire motor assembly along with the encoders out of an old printer and mounting them in the best possible way to the sides of the body. This approach led to many issues of alignment with regards to the Inertial Measurement Unit (IMU) which required extra effort to calibrate. 	
 	
 		
 	\subsection{Custom Parts}
 	Since the gears attached to the wheels were not designed to mount the wheels I had on hand, I had to design a custom adaptor to allow the wheels to mount. 
+	
+	\subsection{Mass Properties}
+	Due to the largely unplanned nature of the mechanical design the mass properties of the robot must be measured after each section is assembled. The names for each section of the robot will follow the same convention as the derivation of the equations of motion, namely body 1 references the wheels and body 2 references the main body of the robot. The masses of each are easy to obtain using a standard scale, however the moments of inertia of each are more difficult to establish.
+
+	\begin{figure}[h]
+		\centerline{\includegraphics[scale=0.75]{"/Graphics/Body1_Mass_Properties"}}
+		\caption{Experimental setup and diagram of forces acting on body 1. Polar coordinates are initially used to define the location of the body where $\theta$ is the angle of the ramp and x is the distance of the body from the bottom.}
+		\label{fig:Body1MassProps}
+	\end{figure}		
+	
+	The moment of inertia of body 1 will be found by rolling it down a long inclined plane and timing it.	 A description of this setup is shown in figure \ref{fig:Body1MassProps}. Polar coordinates were used to define the location of the body with x being the radial distance from the origin. Due to this the velocity found is negative but this decision doesn't change the results. The variable $\phi$ defines the angular position of the body and is related to x through the equation: 
+	
+											%Definition of phi
+	\begin{equation}
+		\label{eqn:Body1PropsPhiDefinition}
+		L - x = r\phi
+	\end{equation}
+	
+	$$-\dot{x} = r \dot{\phi}$$
+	
+	\begin{equation}
+		-\ddot{x} = r \ddot{\phi}
+		\label{eqn:Body1PropsPhiddot}
+	\end{equation}
+	
+	Using the coordinate system in figure \ref{fig:Body1MassProps} force and torque balances can be calculated:
+	
+	%Force balance in x
+	$$\Sigma F_x = ma_x = \mu N - mgsin(\theta)$$
+	
+	Solving for the coefficient of static friction $\mu$:	
+	\begin{equation}
+		\mu = \frac{a_x + gsin(\theta)}{gcos(\theta)}
+		\label{eqn:Body1PropsMu1}
+	\end{equation}
+	
+	%Torque balance about CG
+	The torque balance is done about the body's center of mass:
+	$$\Sigma M_{CG} = J\ddot{\phi} = r \mu mgcos(\theta)$$
+	
+	Again solving for $\mu$:
+	\begin{equation}
+		\mu = \frac{J\ddot{\phi}}{rmgcos(\theta)}
+		\label{eqn:Body1PropsMu2}
+	\end{equation}
+	
+	Equating \ref{eqn:Body1PropsMu1} and \ref{eqn:Body1PropsMu2}:
+	$$\frac{a_x + gsin(\theta)}{gcos(\theta)} = \frac{J\ddot{\phi}}{rmgcos(\theta)}$$
+	
+	Simplifying:
+	$$a_x + gsin(\theta) = \frac{J\ddot{\phi}}{mr}$$
+	
+	Substituting equation \ref{eqn:Body1PropsPhiddot} for $\ddot{\phi}$:
+	$$a_x + gsin(\theta) = -\frac{Ja_x}{mr^2}$$
+	
+	$$\left[ 1 + \frac{J}{mr^2} \right] a_x = -gsin(\theta)$$
+	$$a_x = -gsin(\theta)\frac{mr^2}{J + mr^2}$$
+	
+	Integrating both sides with respect to time:
+	$$\int_{v_0}^{v} dv = -gsin(\theta)\frac{mr^2}{J + mr^2} \int_{0}^{t} dt$$
+	
+	The initial velocity is assumed to be zero:
+	$$v = -gsin(\theta)\frac{mr^2}{J + mr^2}t$$
+	
+	Integrating again:
+	$$\int_{L}^{0} dx = -gsin(\theta)\frac{mr^2}{J + mr^2} \int_{0}^{T_f} t dt$$
+	
+	$$-L = -gsin(\theta)\frac{mr^2}{J + mr^2}\frac{T_f^2}{2}$$
+	
+	Finally rearranging:
+	$$J_{eff} = J + mr^2 = \frac{gmr^2sin(\theta)}{L} \frac{T_f^2}{2}$$
+	
+	This is the moment of inertia about the contact point with the ground and is the effective moment of inertia of the rolling body.
+	
+	\begin{figure}[h]
+		\centerline{\includegraphics[]{"/Graphics/Body2_Mass_Properties"}}
+		\caption{Comparison between the actual geometry of body 2 and the idealized physical pendulum.}
+		\label{fig:Body2MassProps}
+	\end{figure}
+	The moment of inertia of body 2 can be found relatively simply by noting that it effectively is a physical pendulum. By allowing body 2 to hang by its pivot point with the wheels removed and allowing it to swing freely the natural frequency of oscillation can be measured. This quantity can be used to calculate the moment of inertia for the body about the pivot point. This measured value is about the pivot point of the wheels and can also be expressed about the center of mass of the body. Starting with a torque balance of the pendulum:
+	\begin{equation}
+		\label{eqn:PhysicalPendTorqueBalance}
+		\Sigma M_0 = J_{eff} \alpha = -mgLsin(\theta)
+	\end{equation}
+	
+	To eliminate the non-linearity in $\theta$ only small angles are permitted. This allows the approximation $\theta \approx sin(\theta)$ to be used:
+	
+	$$\alpha = \frac{d^2 \theta}{dt^2} = -\frac{mgL}{J_{eff}}\theta$$
+	
+	\begin{equation}
+		\label{eqn:PhysicalPendLinearODE}
+		\frac{d^2 \theta}{dt^2} + \frac{mgL}{J_{eff}} = 0
+	\end{equation}
+	
+	Using standard methods for solving ODE's, if the solution is assumed to be of the form $\theta = e^{rt}$ then the characteristic equation for this system is:
+	$$r^2 + \frac{mgL}{J_{eff}} = 0$$
+	$$r^2 = -\frac{mgL}{J_{eff}}$$
+	$$r = \pm \sqrt[•]{-\frac{mgL}{J_{eff}}}$$
+	$$r = \pm i \; \sqrt[•]{\frac{mgL}{J_{eff}}}$$  % \; is a small space to keep sqrt from overlapping i
+	
+	Plugging these roots into the assumed solution yields:
+	$$\theta = c_1 e^{i \; \sqrt[•]{\frac{mgL}{J_{eff}}}t} + c_2 e^{-i \; \sqrt[•]{\frac{mgL}{J_{eff}}}t}$$
+	
+	Applying Euler's formula:
+	$$\theta = c_1 cos(\; \sqrt[•]{\frac{mgL}{J_{eff}}}t) + i c_2 sin(\; \sqrt[•]{\frac{mgL}{J_{eff}}}t)$$
+	
+	Taking the real part and applying initial conditions:
+	\begin{equation}
+		\label{fig:PhysicalPendRealSolution}
+		\theta = \theta_0 cos(\; \sqrt[•]{\frac{mgL}{J_{eff}}}t)
+	\end{equation}
+
+	%equate to w0 and solve for J_eff
+	
+	Noting that the argument $\sqrt[•]{\frac{mgL}{J_{eff}}}$ is the natural frequency, $\omega_0$, in terms of angular frequency. This can be expressed in terms of frequency:
+	$$\omega_0 = 2\pi f_0$$
+	
+	$$f_0 = \frac{1}{2\pi} \; \sqrt[•]{\frac{mgL}{J_{eff}}}$$
+	
+	The frequency can be measured by allowing the body to swing and counting the number of cycles which occur over a set time period. This can now be solved for the effective moment of inertia:
+	
+	$$2\pi f_0 = \sqrt[•]{\frac{mgL}{J_{eff}}}$$
+	
+	$$4\pi^2 f_0^2 = \frac{mgL}{J_{eff}}$$
+	
+	\begin{equation}
+		\label{eqn:Body2EffectiveMomentOfInertia}
+		J_{eff} = \frac{mgL}{4\pi^2 f_0^2}
+	\end{equation}
+	
+	This effective moment of inertia can be used directly in the dynamic model of the system as it is about the axis of rotation. If the moment of inertia about the center of mass is necessary the parallel axis theorem could be applied to yield:
+	$$J_{CG} = \frac{mgL}{4\pi^2 f_0^2} - mL^2$$ 
 
 \section{Electrical Design}
 	\subsection{Component Selection}

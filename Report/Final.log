@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2020.4.8)  18 APR 2020 23:02
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2020.4.8)  13 MAY 2020 20:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -334,49 +334,117 @@ pe png)
 Package pdftex.def Info: "../Report/Images/""/SISO_Controllers/PDRL_Combined".p
 ng used on input line 254.
 (pdftex.def)             Requested size: 469.75502pt x 176.1551pt.
- [5 <../Report/Images//SISO_Controllers/PDRL_Combined.png>]
-<"../Report/Images/""/Graphics/Motor-Encoder-Test-Arrangement".png, id=50, 301.
+
+<"../Report/Images/""/Graphics/Robot_Body".png, id=44, 301.125pt x 225.9642pt>
+File: "../Report/Images/""/Graphics/Robot_Body".png Graphic file (type png)
+
+<use "../Report/Images/""/Graphics/Robot_Body".png>
+Package pdftex.def Info: "../Report/Images/""/Graphics/Robot_Body".png used on 
+input line 264.
+(pdftex.def)             Requested size: 301.12425pt x 225.96364pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[5 <../Report/Images//SISO_Controllers/PDRL_Combined.png>]
+<"../Report/Images/""/Graphics/Body1_Mass_Properties".png, id=51, 301.125pt x 2
+25.9642pt>
+File: "../Report/Images/""/Graphics/Body1_Mass_Properties".png Graphic file (ty
+pe png)
+ <use "../Report/Images/""/Graphics/Body1_Mass_Properties".png>
+Package pdftex.def Info: "../Report/Images/""/Graphics/Body1_Mass_Properties".p
+ng used on input line 280.
+(pdftex.def)             Requested size: 225.84319pt x 169.47272pt.
+
+[6 <../Report/Images//Graphics/Robot_Body.png> <../Report/Images//Graphics/Body
+1_Mass_Properties.png>] [7]
+<"../Report/Images/""/Graphics/Body2_Mass_Properties".png, id=60, 301.125pt x 2
+25.9642pt>
+File: "../Report/Images/""/Graphics/Body2_Mass_Properties".png Graphic file (ty
+pe png)
+ <use "../Report/Images/""/Graphics/Body2_Mass_Properties".png>
+Package pdftex.def Info: "../Report/Images/""/Graphics/Body2_Mass_Properties".p
+ng used on input line 350.
+(pdftex.def)             Requested size: 301.12425pt x 225.96364pt.
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ¢ in font cmr5!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ¢ in font cmr5!
+
+[8 <../Report/Images//Graphics/Body2_Mass_Properties.png>]
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ¢ in font cmr5!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ¢ in font cmr5!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ¢ in font cmr5!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ¢ in font cmr5!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ¢ in font cmr5!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ¢ in font cmr5!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ¢ in font cmr5!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ¢ in font cmr5!
+
+<"../Report/Images/""/Graphics/Motor-Encoder-Test-Arrangement".png, id=65, 301.
 125pt x 225.9642pt>
 File: "../Report/Images/""/Graphics/Motor-Encoder-Test-Arrangement".png Graphic
  file (type png)
 
 <use "../Report/Images/""/Graphics/Motor-Encoder-Test-Arrangement".png>
 Package pdftex.def Info: "../Report/Images/""/Graphics/Motor-Encoder-Test-Arran
-gement".png used on input line 278.
+gement".png used on input line 417.
 (pdftex.def)             Requested size: 216.81pt x 162.70099pt.
 
-[6 <../Report/Images//Graphics/Motor-Encoder-Test-Arrangement.png>]
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[9] [10 <../Report/Images//Graphics/Motor-Encoder-Test-Arrangement.png>]
 (./Final.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 3759 strings out of 494910
- 57386 string characters out of 6179837
- 128463 words of memory out of 5000000
- 7006 multiletter control sequences out of 15000+600000
+ 3785 strings out of 494910
+ 58418 string characters out of 6179837
+ 128560 words of memory out of 5000000
+ 7029 multiletter control sequences out of 15000+600000
  9369 words of font info for 34 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
  42i,9n,42p,599b,337s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texl
-ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/te
-xmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dis
-t/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts
-/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/
-public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
-7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/s
-hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/te
-xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on Final.pdf (8 pages, 459187 bytes).
+ive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex7.pfb></usr/share/texliv
+e/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></
+usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/sha
+re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+Output written on Final.pdf (12 pages, 668397 bytes).
 PDF statistics:
- 104 PDF objects out of 1000 (max. 8388607)
- 66 compressed objects within 1 object stream
+ 126 PDF objects out of 1000 (max. 8388607)
+ 77 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 31 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 46 words of extra memory for PDF output out of 10000 (max. 10000000)
 

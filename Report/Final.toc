@@ -9,9 +9,10 @@
 \contentsline {section}{\numberline {3}Mechanical Design}{5}
 \contentsline {subsection}{\numberline {3.1}Part Sourcing}{5}
 \contentsline {subsection}{\numberline {3.2}Custom Parts}{6}
-\contentsline {section}{\numberline {4}Electrical Design}{6}
-\contentsline {subsection}{\numberline {4.1}Component Selection}{6}
-\contentsline {subsection}{\numberline {4.2}Motor Parameter Evaluation}{6}
-\contentsline {section}{\numberline {5}Software Design}{6}
-\contentsline {subsection}{\numberline {5.1}Component Testing Software}{6}
-\contentsline {subsection}{\numberline {5.2}Controller Software}{6}
+\contentsline {subsection}{\numberline {3.3}Mass Properties}{6}
+\contentsline {section}{\numberline {4}Electrical Design}{9}
+\contentsline {subsection}{\numberline {4.1}Component Selection}{9}
+\contentsline {subsection}{\numberline {4.2}Motor Parameter Evaluation}{10}
+\contentsline {section}{\numberline {5}Software Design}{10}
+\contentsline {subsection}{\numberline {5.1}Component Testing Software}{10}
+\contentsline {subsection}{\numberline {5.2}Controller Software}{10}
